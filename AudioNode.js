@@ -63,6 +63,8 @@ var AudioNode = {
 		to.input_nodes[from.identifier] = from;
 		from.output_nodes[to.identifier] = to;
 
-		from.web_audio_node_handle.connect(to.web_audio_node_handle);
+		if( from.web_audio_node_handle && to.web_audio_node_handle ) {
+			from.web_audio_node_handle.connect(to.web_audio_node_handle);
+		}
 	},
 };

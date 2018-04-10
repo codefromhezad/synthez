@@ -17,6 +17,15 @@
 
 			AudioNode.connect(osc, out);
 
+			var melody = function() {
+				osc.noteOn("A4", osc.audio_context.currentTime, osc.audio_context.currentTime + 0.5);
+				osc.noteOn("C5", osc.audio_context.currentTime + 0.51, osc.audio_context.currentTime + 1);
+				osc.noteOn("E5", osc.audio_context.currentTime + 1.01, osc.audio_context.currentTime + 1.5);
+				osc.noteOn("G4", osc.audio_context.currentTime + 1.51, osc.audio_context.currentTime + 2);
+			}
+
+			melody();
+
 		</script>
 	</body>
 </html>

@@ -31,6 +31,7 @@ AudioNode.define('OscillatorNode', {
 			}
 		},
 
+
 		/* Public OSC setters/getters */
 		set_type: function(new_osc_type) {
 			this.settings.type = new_osc_type;
@@ -41,6 +42,7 @@ AudioNode.define('OscillatorNode', {
 			this.settings.frequency = new_osc_frequency;
 			this.web_audio_node_handle.frequency.value = this.settings.frequency;
 		},
+
 
 		/* Public OSC interaction methods */
 		start: function(start_time, end_time) {
@@ -66,8 +68,20 @@ AudioNode.define('OscillatorNode', {
 
 			this.web_audio_node_handle.stop(end_time);
 			this.__reset_web_audio_node_handle();
-
+			console.log('stop')
 			return true;
+		},
+
+		noteOn: function(note_name, start_time, end_time) {
+			var frequency = MusicHelper.note_to_freq(note_name);
+
+			this.stop();
+			this.set_frequency(frequency);
+			this.start(start_time, end_time);
+		},
+
+		noteOff: function(end_time) {
+			this.stop(end_time);
 		}
 	}
 });
