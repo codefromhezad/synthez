@@ -1,0 +1,18 @@
+html, body {
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+  font-family: Helvetica, Arial, Verdana, Sans; }
+
+/* Opened container nodes */
+.synthez-audio-node.synthez-container-is-opened {
+  position: absolute;
+  width: 90vw;
+  height: 80vh;
+  left: 5vw;
+  top: 10vh;
+  background: #eee; }
+
+/* Every regular nodes and closed container nodes */
+.synthez-audio-node:not(.synthez-container-is-opened) {
+  position: absolute; }
