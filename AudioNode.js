@@ -1,10 +1,13 @@
+
+
 var AudioNode = {
 	/* Global private data */
 	__definitions: {},
 	__identifiers_count: {},
 
-	__audio_context: null,
+	__root_container_node: null,
 
+	__audio_context: null,
 
 	/* Dev public methods */
 	define: function(node_class_name, node_conf) {
@@ -18,6 +21,8 @@ var AudioNode = {
 
 				new_node.defaults = node_conf.defaults || {};
 				new_node.listeners = node_conf.listeners || {};
+				
+				new_node.node_type = node_class_name;
 
 				if( AudioNode.__identifiers_count[node_class_name] === undefined ) {
 					AudioNode.__identifiers_count[node_class_name] = 0;
@@ -50,16 +55,17 @@ var AudioNode = {
 		}) (node_class_name, node_conf);
 	},
 
+	create_root_container_node: function() {
+		var root_node = AudioNode.__definitions['ContainerNode']();
+		root_node.init();
 
-	/* Frontend public methods */
-	add: function(node_class_name, user_options) {
-		var new_node = AudioNode.__definitions[node_class_name]();
-		new_node.init(user_options);
+		AudioNode.__root_container_node = root_node;
 
-		return new_node;
+		return root_node;
 	},
 
-	connect: function(from, to) {
+	/* Frontend public methods */
+	connect_nodes: function(from, to) {
 		to.input_nodes[from.identifier] = from;
 		from.output_nodes[to.identifier] = to;
 

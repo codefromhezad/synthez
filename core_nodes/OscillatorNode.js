@@ -68,7 +68,7 @@ AudioNode.define('OscillatorNode', {
 
 			this.web_audio_node_handle.stop(end_time);
 			this.__reset_web_audio_node_handle();
-			console.log('stop')
+			
 			return true;
 		},
 
