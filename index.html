@@ -13,16 +13,18 @@
 		<script src="AudioNodeTemplate.js"></script>
 		<script src="AudioNode.js"></script>
 		<script src="core_nodes/ContainerNode.js"></script>
-		<script src="core_nodes/OscillatorNode.js"></script>
-		<script src="core_nodes/OutputNode.js"></script>
+		<script src="core_nodes/OscillatorNode/OscillatorNode.js"></script>
+		<script src="core_nodes/OutputNode/OutputNode.js"></script>
 
 		<script>
 
 			var root_container = AudioNode.create_root_container_node();
-			root_container.open();
 
 			var osc = root_container.add_node('OscillatorNode');
+			osc.set_position({top: '50px', left: '20px'});
+
 			var out = root_container.add_node('OutputNode');
+			out.set_position({top: '50px', left: '320px'});
 
 			AudioNode.connect_nodes(osc, out);
 

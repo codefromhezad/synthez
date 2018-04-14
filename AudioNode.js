@@ -21,6 +21,8 @@ var AudioNode = {
 
 				new_node.defaults = node_conf.defaults || {};
 				new_node.listeners = node_conf.listeners || {};
+				new_node.nice_name = node_conf.nice_name || node_class_name;
+				new_node.icon = node_conf.icon || null;
 				
 				new_node.node_type = node_class_name;
 
@@ -59,7 +61,10 @@ var AudioNode = {
 		var root_node = AudioNode.__definitions['ContainerNode']();
 		root_node.init();
 
+		root_node.set_name('Root container');
 		AudioNode.__root_container_node = root_node;
+
+		root_node.open();
 
 		return root_node;
 	},

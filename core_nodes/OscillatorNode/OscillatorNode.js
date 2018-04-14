@@ -5,6 +5,11 @@ const OSC_TYPE_TRIANGLE = "triangle";
 const OSC_TYPE_CUSTOM = "custom";
 
 AudioNode.define('OscillatorNode', {
+	nice_name: 'Oscillator',
+	icon: {
+		file: 'core_nodes/OscillatorNode/noun_99575_cc.svg',
+		credits: 'Oscillator by James Christopher from the Noun Project'
+	},
 	defaults: {
 		type: OSC_TYPE_SINE,
 		frequency: 440
@@ -68,7 +73,7 @@ AudioNode.define('OscillatorNode', {
 
 			this.web_audio_node_handle.stop(end_time);
 			this.__reset_web_audio_node_handle();
-			
+
 			return true;
 		},
 

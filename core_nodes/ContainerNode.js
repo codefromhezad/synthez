@@ -1,6 +1,7 @@
 const ROOT_NODES_CONTAINER_ID = 'root';
 
 AudioNode.define('ContainerNode', {
+	nice_name: 'Container',
 	defaults: {},
 	props: {
 		nodes: {},
