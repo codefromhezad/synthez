@@ -1,7 +1,7 @@
-AudioNode.define('OutputNode', {
-	nice_name: 'Output',
+SynthezNode.define('AudioOutputNode', {
+	nice_name: 'Audio Output',
 	icon: {
-		file: 'core_nodes/OutputNode/noun_327603_cc.svg',
+		file: 'core_nodes/AudioOutputNode/noun_327603_cc.svg',
 		credits: 'Speaker by www.yugudesign.com from the Noun Project'
 	},
 	listeners: {

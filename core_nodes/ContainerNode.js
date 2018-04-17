@@ -1,6 +1,6 @@
 const ROOT_NODES_CONTAINER_ID = 'root';
 
-AudioNode.define('ContainerNode', {
+SynthezNode.define('ContainerNode', {
 	nice_name: 'Container',
 	defaults: {},
 	props: {
@@ -15,7 +15,14 @@ AudioNode.define('ContainerNode', {
 	methods: {
 		/* Public Container methods */
 		add_node: function(node_class_name, user_options) {
-			var new_node = AudioNode.__definitions[node_class_name]();
+			var new_node_builder = SynthezNode.__definitions[node_class_name];
+
+			if( typeof new_node_builder !== "function" ) {
+				console.error("'"+node_class_name+"' is not a registered node");
+				return;
+			}
+			
+			var new_node = new_node_builder();
 			new_node.init(user_options, this);
 			
 			this.props.nodes[new_node.identifier] = new_node;

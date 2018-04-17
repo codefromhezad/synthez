@@ -1,10 +1,11 @@
-var AudioNodeTemplate = function() {
+var SynthezNodeTemplate = function(node_class_name) {
 	this.audio_context = null;
 
+	this.node_type = node_class_name;
+	this.parent_type = null;
+
 	this.identifier = null;
-	this.node_type = null;
 	this.nice_name = null;
-	this.instance_name = null;
 
 	this.defaults = {};
 	this.settings = {};
@@ -22,17 +23,17 @@ var AudioNodeTemplate = function() {
 	}
 
 	this.position = {};
-	this.icon = null;
+	this.icon = {};
 
 	this.listeners = {};
 	this.props = {},
 
 	this.init = function(user_options, parent_container) {
-		if( ! AudioNode.__audio_context ) {
-			AudioNode.__audio_context = new (window.AudioContext || window.webkitAudioContext)();
+		if( ! SynthezNode.__audio_context ) {
+			SynthezNode.__audio_context = new (window.AudioContext || window.webkitAudioContext)();
 		}
 
-		this.audio_context = AudioNode.__audio_context;
+		this.audio_context = SynthezNode.__audio_context;
 		Object.assign(this.settings, this.defaults, user_options || {});
 
 		if( parent_container ) {

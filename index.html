@@ -10,23 +10,23 @@
 
 		<script src="Helper.js"></script>
 		<script src="MusicHelper.js"></script>
-		<script src="AudioNodeTemplate.js"></script>
-		<script src="AudioNode.js"></script>
+		<script src="SynthezNodeTemplate.js"></script>
+		<script src="SynthezNode.js"></script>
 		<script src="core_nodes/ContainerNode.js"></script>
 		<script src="core_nodes/OscillatorNode/OscillatorNode.js"></script>
-		<script src="core_nodes/OutputNode/OutputNode.js"></script>
+		<script src="core_nodes/AudioOutputNode/AudioOutputNode.js"></script>
 
 		<script>
 
-			var root_container = AudioNode.create_root_container_node();
+			var root_container = SynthezNode.create_root_container_node();
 
-			var osc = root_container.add_node('OscillatorNode');
+			var osc = root_container.add_node('SineOscillatorNode');
 			osc.set_position({top: '50px', left: '20px'});
 
-			var out = root_container.add_node('OutputNode');
+			var out = root_container.add_node('AudioOutputNode');
 			out.set_position({top: '50px', left: '320px'});
 
-			AudioNode.connect_nodes(osc, out);
+			SynthezNode.connect_nodes(osc, out);
 
 			var melody = function() {
 				osc.noteOn("A4", osc.audio_context.currentTime, osc.audio_context.currentTime + 0.5);

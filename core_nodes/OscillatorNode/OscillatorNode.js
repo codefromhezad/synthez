@@ -4,7 +4,7 @@ const OSC_TYPE_SAWTOOTH = "sawtooth";
 const OSC_TYPE_TRIANGLE = "triangle";
 const OSC_TYPE_CUSTOM = "custom";
 
-AudioNode.define('OscillatorNode', {
+SynthezNode.define('OscillatorNode', {
 	nice_name: 'Oscillator',
 	icon: {
 		file: 'core_nodes/OscillatorNode/noun_99575_cc.svg',
@@ -27,7 +27,11 @@ AudioNode.define('OscillatorNode', {
 		__reset_web_audio_node_handle: function() {
 			this.web_audio_node_handle = this.audio_context.createOscillator();
 			this.web_audio_node_handle.type = this.settings.type;
-			this.web_audio_node_handle.frequency.value = this.settings.frequency;
+
+			this.web_audio_node_handle.frequency.setValueAtTime(
+				this.settings.frequency, 
+				this.audio_context.currentTime
+			);
 
 			this.props.is_playing = false;
 
@@ -45,7 +49,11 @@ AudioNode.define('OscillatorNode', {
 
 		set_frequency: function(new_osc_frequency) {
 			this.settings.frequency = new_osc_frequency;
-			this.web_audio_node_handle.frequency.value = this.settings.frequency;
+			
+			this.web_audio_node_handle.frequency.setValueAtTime(
+				this.settings.frequency, 
+				this.audio_context.currentTime
+			);
 		},
 
 
@@ -88,5 +96,14 @@ AudioNode.define('OscillatorNode', {
 		noteOff: function(end_time) {
 			this.stop(end_time);
 		}
+	}
+});
+
+SynthezNode.define('SineOscillatorNode', {
+	extends: 'OscillatorNode',
+	nice_name: 'Sine Oscillator',
+	defaults: {
+		type: OSC_TYPE_SINE,
+		frequency: 440
 	}
 });
