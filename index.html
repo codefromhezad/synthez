@@ -14,29 +14,53 @@
 		<script src="SynthezNode.js"></script>
 		<script src="core_nodes/ContainerNode.js"></script>
 		<script src="core_nodes/OscillatorNode/OscillatorNode.js"></script>
+		<script src="core_nodes/OscillatorNode/SineOscillatorNode.js"></script>
+		<script src="core_nodes/OscillatorNode/SquareOscillatorNode.js"></script>
+		<script src="core_nodes/OscillatorNode/SawtoothOscillatorNode.js"></script>
+		<script src="core_nodes/OscillatorNode/TriangleOscillatorNode.js"></script>
+		<script src="core_nodes/SequencerNode/SequencerTrackNode.js"></script>
 		<script src="core_nodes/AudioOutputNode/AudioOutputNode.js"></script>
 
 		<script>
 
 			var root_container = SynthezNode.create_root_container_node();
 
+			var seq = root_container.add_node('SequencerTrackNode', {bpm: 170});
+			seq.set_position({top: '50px', left: '20px'});
+			
+			seq.add_note({
+				frequency: MusicHelper.note_to_freq("A4"),
+				beat_start: 0,
+				beat_length: 1
+			});
+
+			seq.add_note({
+				frequency: MusicHelper.note_to_freq("C5"),
+				beat_start: 1,
+				beat_length: 1
+			});
+
+			seq.add_note({
+				frequency: MusicHelper.note_to_freq("E5"),
+				beat_start: 2,
+				beat_length: 1
+			});
+
+			seq.add_note({
+				frequency: MusicHelper.note_to_freq("G4"),
+				beat_start: 3,
+				beat_length: 1
+			});
+
 			var osc = root_container.add_node('SineOscillatorNode');
-			osc.set_position({top: '50px', left: '20px'});
+			osc.set_position({top: '50px', left: '320px'});
 
 			var out = root_container.add_node('AudioOutputNode');
-			out.set_position({top: '50px', left: '320px'});
+			out.set_position({top: '50px', left: '620px'});
 
 			SynthezNode.connect_nodes(osc, out);
 
-			var melody = function() {
-				osc.noteOn("A4", osc.audio_context.currentTime, osc.audio_context.currentTime + 0.5);
-				osc.noteOn("C5", osc.audio_context.currentTime + 0.51, osc.audio_context.currentTime + 1);
-				osc.noteOn("E5", osc.audio_context.currentTime + 1.01, osc.audio_context.currentTime + 1.5);
-				osc.noteOn("G4", osc.audio_context.currentTime + 1.51, osc.audio_context.currentTime + 2);
-			}
-
-			melody();
-
+			seq.set_instrument_node(osc);
 		</script>
 	</body>
 </html>

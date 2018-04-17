@@ -26,11 +26,6 @@ var SynthezNode = {
 		Object.assign(new_node.icon, from_conf.icon || {}, node_conf.icon || {});
 		new_node.nice_name = node_conf.nice_name || new_node.node_type;
 
-		// new_node.defaults = node_conf.defaults || {};
-		// new_node.listeners = node_conf.listeners || {};
-		// new_node.nice_name = node_conf.nice_name || new_node.node_type;
-		// new_node.icon = node_conf.icon || null;
-
 		if( SynthezNode.__identifiers_count[new_node.node_type] === undefined ) {
 			SynthezNode.__identifiers_count[new_node.node_type] = 0;
 		} else {
@@ -38,18 +33,6 @@ var SynthezNode = {
 		}
 
 		new_node.identifier = new_node.node_type + SynthezNode.__identifiers_count[new_node.node_type];
-
-		// if( node_conf.props ) {
-		// 	for(var prop_name in node_conf.props) {
-		// 		new_node.props[prop_name] = node_conf.props[prop_name];
-		// 	}
-		// }
-
-		// if( node_conf.listeners ) {
-		// 	for(var listener_name in node_conf.listeners) {
-		// 		new_node.listeners[listener_name] = node_conf.listeners[listener_name];
-		// 	}
-		// }
 
 		Object.assign(new_node.props, from_conf.props || {}, node_conf.props || {});
 		Object.assign(new_node.listeners, from_conf.listeners || {}, node_conf.listeners || {});
@@ -108,12 +91,15 @@ var SynthezNode = {
 	},
 
 	/* Frontend public methods */
-	connect_nodes: function(from, to) {
+	connect_nodes: function(from, to, skip_web_audio_connect) {
 		to.input_nodes[from.identifier] = from;
 		from.output_nodes[to.identifier] = to;
 
-		if( from.web_audio_node_handle && to.web_audio_node_handle ) {
+		if( skip_web_audio_connect === undefined && from.web_audio_node_handle && to.web_audio_node_handle ) {
 			from.web_audio_node_handle.connect(to.web_audio_node_handle);
 		}
+
+		from.trigger('on_connect_to', to);
+		from.trigger('on_connect_from', from);
 	},
 };

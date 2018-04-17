@@ -7,7 +7,7 @@ const OSC_TYPE_CUSTOM = "custom";
 SynthezNode.define('OscillatorNode', {
 	nice_name: 'Oscillator',
 	icon: {
-		file: 'core_nodes/OscillatorNode/noun_99575_cc.svg',
+		file: 'core_nodes/OscillatorNode/oscillator_generic.svg',
 		credits: 'Oscillator by James Christopher from the Noun Project'
 	},
 	defaults: {
@@ -62,7 +62,7 @@ SynthezNode.define('OscillatorNode', {
 			if( this.props.is_playing ) {
 				return false;
 			}
-
+			
 			this.web_audio_node_handle.start(start_time);
 			this.props.is_playing = true;
 
@@ -85,9 +85,7 @@ SynthezNode.define('OscillatorNode', {
 			return true;
 		},
 
-		noteOn: function(note_name, start_time, end_time) {
-			var frequency = MusicHelper.note_to_freq(note_name);
-
+		noteOn: function(frequency, start_time, end_time) {
 			this.stop();
 			this.set_frequency(frequency);
 			this.start(start_time, end_time);
@@ -99,11 +97,3 @@ SynthezNode.define('OscillatorNode', {
 	}
 });
 
-SynthezNode.define('SineOscillatorNode', {
-	extends: 'OscillatorNode',
-	nice_name: 'Sine Oscillator',
-	defaults: {
-		type: OSC_TYPE_SINE,
-		frequency: 440
-	}
-});

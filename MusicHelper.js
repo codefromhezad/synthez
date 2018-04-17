@@ -38,6 +38,10 @@ var MusicHelper = {
 
 		var scale_frequency = MusicHelper.__A4_freq * Math.pow(2, note_octave - 4)
 		return MusicHelper.__get_note_frequency(note_name, scale_frequency);
+	},
+
+	rythm_beats_to_length: function(num_blacks, bpm) {
+		return 1 / (bpm/60) * num_blacks;
 	}
 }
 

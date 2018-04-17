@@ -119,11 +119,11 @@ var SynthezNodeTemplate = function(node_class_name) {
 		return (this.node_type == 'ContainerNode' && this.parent_container == null);
 	};
 
-	this.trigger = function(listener_name) {
+	this.trigger = function(listener_name, args_data) {
 		if( ! this.listeners[listener_name] ) {
 			return undefined;
 		}
 
-		return this.listeners[listener_name].call(this);
+		return this.listeners[listener_name].call(this, args_data);
 	};
 };
