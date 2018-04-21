@@ -1,4 +1,4 @@
-
+var AUDIO_TIMER_EPSILON = 0.0001;
 
 var SynthezNode = {
 	/* Global private data */
@@ -11,7 +11,42 @@ var SynthezNode = {
 
 	__audio_context: null,
 
+	__global_timer_start_time: null,
+
+	__started: false,
+
+	/* Front public methods */
+	start: function() {
+		if( SynthezNode.__started ) {
+			console.warn('Synthez Global Timer already running. Aborting new start.');
+			return false;
+		}
+
+		SynthezNode.__global_timer_start_time = Date.now() * 0.001;
+		SynthezNode.__started = true;
+
+		return SynthezNode.__get_global_audio_context();
+	},
+
+	stop: function() {
+		if( ! SynthezNode.__started ) {
+			console.warn('Synthez Global Timer not running. Aborting stop.');
+			return false;
+		}
+
+		SynthezNode.__global_timer_start_time = null;
+		SynthezNode.__started = false;
+	},
+
 	/* Dev private methods */
+	__get_global_audio_context: function() {
+		if( ! SynthezNode.__audio_context ) {
+			SynthezNode.__audio_context = new (window.AudioContext || window.webkitAudioContext)();
+		}
+
+		return SynthezNode.__audio_context;
+	},
+
 	__load_conf: function(new_node, node_conf, from_conf) {
 		if( ! node_conf ) {
 			node_conf = {};
@@ -22,6 +57,7 @@ var SynthezNode = {
 		}
 		
 		Object.assign(new_node.defaults, from_conf.defaults || {}, node_conf.defaults || {});
+		Object.assign(new_node.messages_receivers, from_conf.messages_receivers || {}, node_conf.messages_receivers || {});
 		Object.assign(new_node.listeners, from_conf.listeners || {}, node_conf.listeners || {});
 		Object.assign(new_node.icon, from_conf.icon || {}, node_conf.icon || {});
 		new_node.nice_name = node_conf.nice_name || new_node.node_type;

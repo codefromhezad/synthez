@@ -25,15 +25,27 @@ var SynthezNodeTemplate = function(node_class_name) {
 	this.position = {};
 	this.icon = {};
 
-	this.listeners = {};
+	this.listeners = {
+		on_message_data: function(message_data) {
+			switch(message_data.type) {
+				case MESSAGE_TYPE_SETTING:
+					if( typeof message_data.conf === "string" ) {
+						this.trigger_message_receiver(message_data.conf);
+					} else {
+						for(var setting_slug in message_data.conf) {
+							this.trigger_message_receiver(setting_slug, message_data.conf[setting_slug]);
+						}
+					}
+					break;
+			}
+		}
+	};
 	this.props = {},
 
-	this.init = function(user_options, parent_container) {
-		if( ! SynthezNode.__audio_context ) {
-			SynthezNode.__audio_context = new (window.AudioContext || window.webkitAudioContext)();
-		}
+	this.messages_receivers = {};
 
-		this.audio_context = SynthezNode.__audio_context;
+	this.init = function(user_options, parent_container) {
+		this.audio_context = SynthezNode.__get_global_audio_context();
 		Object.assign(this.settings, this.defaults, user_options || {});
 
 		if( parent_container ) {
@@ -42,6 +54,20 @@ var SynthezNodeTemplate = function(node_class_name) {
 
 		this.trigger('on_init');
 	};
+
+	this.send_message_data_to_outputs = function(message_data) {
+		message_data.__sent = true;
+		for(var node_id in this.output_nodes) {
+			this.output_nodes[node_id].trigger('on_message_data', message_data);
+		}
+	};
+
+	this.disconnect_all_outputs = function() {
+		if( this.web_audio_node_handle && this.output_nodes.length ) {
+			this.web_audio_node_handle.disconnect();
+			this.output_nodes = [];
+		}
+	}
 
 	this.set_position = function(position) {
 		this.position = position;
@@ -126,4 +152,17 @@ var SynthezNodeTemplate = function(node_class_name) {
 
 		return this.listeners[listener_name].call(this, args_data);
 	};
+
+	this.trigger_message_receiver = function(setting_key, setting_value) {
+		if( this.messages_receivers[setting_key] === undefined ) {
+			console.warn('"' + this.nice_name + '" can\'t have any setter for "'+setting_key+'" setting. Aborting.');
+			return false;
+		}
+
+		if( setting_value === undefined ) {
+			return this.messages_receivers[setting_key].call(this);
+		} else {
+			return this.messages_receivers[setting_key].call(this, setting_value);
+		}
+	}
 };

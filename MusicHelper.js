@@ -40,7 +40,7 @@ var MusicHelper = {
 		return MusicHelper.__get_note_frequency(note_name, scale_frequency);
 	},
 
-	rythm_beats_to_length: function(num_blacks, bpm) {
+	rythm_beats_to_seconds: function(num_blacks, bpm) {
 		return 1 / (bpm/60) * num_blacks;
 	}
 }

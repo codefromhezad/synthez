@@ -7,50 +7,31 @@
 		<link rel="stylesheet" href="css/synthez.css" type="text/css" />
 	</head>
 	<body>
+ 
+		<script src="vendor/web-audio-scheduler.min.js"></script>
 
 		<script src="Helper.js"></script>
 		<script src="MusicHelper.js"></script>
 		<script src="SynthezNodeTemplate.js"></script>
 		<script src="SynthezNode.js"></script>
+		<script src="SynthezDataMessage.js"></script>
 		<script src="core_nodes/ContainerNode.js"></script>
 		<script src="core_nodes/OscillatorNode/OscillatorNode.js"></script>
 		<script src="core_nodes/OscillatorNode/SineOscillatorNode.js"></script>
 		<script src="core_nodes/OscillatorNode/SquareOscillatorNode.js"></script>
 		<script src="core_nodes/OscillatorNode/SawtoothOscillatorNode.js"></script>
 		<script src="core_nodes/OscillatorNode/TriangleOscillatorNode.js"></script>
-		<script src="core_nodes/SequencerNode/SequencerTrackNode.js"></script>
+		<script src="core_nodes/SequencerNode/SequencerNode.js"></script>
 		<script src="core_nodes/AudioOutputNode/AudioOutputNode.js"></script>
 
 		<script>
 
+
+			SynthezNode.start();
+
+
+
 			var root_container = SynthezNode.create_root_container_node();
-
-			var seq = root_container.add_node('SequencerTrackNode', {bpm: 170});
-			seq.set_position({top: '50px', left: '20px'});
-			
-			seq.add_note({
-				frequency: MusicHelper.note_to_freq("A4"),
-				beat_start: 0,
-				beat_length: 1
-			});
-
-			seq.add_note({
-				frequency: MusicHelper.note_to_freq("C5"),
-				beat_start: 1,
-				beat_length: 1
-			});
-
-			seq.add_note({
-				frequency: MusicHelper.note_to_freq("E5"),
-				beat_start: 2,
-				beat_length: 1
-			});
-
-			seq.add_note({
-				frequency: MusicHelper.note_to_freq("G4"),
-				beat_start: 3,
-				beat_length: 1
-			});
 
 			var osc = root_container.add_node('SineOscillatorNode');
 			osc.set_position({top: '50px', left: '320px'});
@@ -60,7 +41,21 @@
 
 			SynthezNode.connect_nodes(osc, out);
 
-			seq.set_instrument_node(osc);
+
+
+			var seq = root_container.add_node('SequencerNode', {
+				bpm: 120
+			});
+			seq.set_position({top: '50px', left: '20px'});
+			
+			SynthezNode.connect_nodes(seq, osc);
+
+			seq.add_message_note("A4", 0, 1);
+			seq.add_message_note("C5", 1, 1);
+			seq.add_message_note("E5", 2, 1);
+			seq.add_message_note("G4", 3, 1);
+
+			// seq.play();
 		</script>
 	</body>
 </html>
