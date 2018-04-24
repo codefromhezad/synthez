@@ -7,8 +7,13 @@
 		<link rel="stylesheet" href="css/synthez.css" type="text/css" />
 	</head>
 	<body>
+		<div id="main-container"></div>
+
+
+
  
 		<script src="vendor/web-audio-scheduler.min.js"></script>
+		<script src="vendor/svg.min.js"></script>
 
 		<script src="Helper.js"></script>
 		<script src="MusicHelper.js"></script>
@@ -27,9 +32,7 @@
 		<script>
 
 
-			SynthezNode.start();
-
-
+			SynthezNode.start('main-container');
 
 			var root_container = SynthezNode.create_root_container_node();
 
@@ -48,7 +51,7 @@
 			});
 			seq.set_position({top: '50px', left: '20px'});
 			
-			SynthezNode.connect_nodes(seq, osc);
+			SynthezNode.connect_nodes(seq, osc, CONNECTION_TYPE_MESSAGE);
 
 			seq.add_message_note("A4", 0, 1);
 			seq.add_message_note("C5", 1, 1);

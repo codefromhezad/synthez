@@ -10,8 +10,8 @@ var SynthezNodeTemplate = function(node_class_name) {
 	this.defaults = {};
 	this.settings = {};
 
-	this.input_nodes = {};
-	this.output_nodes = {};
+	this.audio_output_nodes = {};
+	this.message_output_nodes = {};
 
 	this.web_audio_node_handle = null;
 	
@@ -55,17 +55,26 @@ var SynthezNodeTemplate = function(node_class_name) {
 		this.trigger('on_init');
 	};
 
-	this.send_message_data_to_outputs = function(message_data) {
+	this.add_data_message = function(data_message) {
+		data_message.__list_index = this.props.messages_list.push(data_message) - 1;
+		return data_message.__list_index;
+	};
+
+	this.remove_data_message = function(message_index) {
+		this.props.__scheduler.remove(message_index);
+	};
+
+	this.send_message_data_to_message_outputs = function(message_data) {
 		message_data.__sent = true;
-		for(var node_id in this.output_nodes) {
-			this.output_nodes[node_id].trigger('on_message_data', message_data);
+		for(var node_id in this.message_output_nodes) {
+			this.message_output_nodes[node_id].trigger('on_message_data', message_data);
 		}
 	};
 
-	this.disconnect_all_outputs = function() {
-		if( this.web_audio_node_handle && this.output_nodes.length ) {
+	this.disconnect_all_audio_outputs = function() {
+		if( this.web_audio_node_handle && this.audio_output_nodes.length ) {
 			this.web_audio_node_handle.disconnect();
-			this.output_nodes = [];
+			this.audio_output_nodes = [];
 		}
 	}
 
@@ -95,6 +104,14 @@ var SynthezNodeTemplate = function(node_class_name) {
 		return 'synthez-' + Helper.camel_case_to_dash_case(this.node_type);
 	}
 
+	this.set_dom_connector_connection_style = function(connection_type, in_or_out, is_connected) {
+		if( is_connected ) {
+			this.dom_element_children[connection_type + '_' + in_or_out].classList.add('connected');
+		} else {
+			this.dom_element_children[connection_type + '_' + in_or_out].classList.remove('connected');
+		}
+	}
+
 	this.spawn_dom_element = function() {
 		if( document.getElementById(this.get_dom_element_id()) ) {
 			return;
@@ -103,13 +120,14 @@ var SynthezNodeTemplate = function(node_class_name) {
 		this.dom_element = document.createElement('div');
 		this.dom_element.id = this.get_dom_element_id();
 		this.dom_element.classList.add(this.get_dom_element_class_name());
-		this.dom_element.classList.add('synthez-audio-node');
+		this.dom_element.classList.add('synthez-dom-node');
 
 		if( this.position ) {
 			this.set_position(this.position);
 		}
 
-		var parent_dom_element = document.getElementsByTagName('body')[0];
+		var parent_dom_element = SynthezNode.__main_dom_container;
+
 		if( ! this.is_root_container() ) {
 			parent_dom_element = this.parent_container.dom_element_children.body;
 		}
@@ -123,6 +141,34 @@ var SynthezNodeTemplate = function(node_class_name) {
 		if( this.icon ) {
 			this.dom_element_children.body.style.backgroundImage = "url('"+this.icon.file+"')";
 		}
+
+		this.dom_element_children.audio_input = document.createElement('div');
+		this.dom_element_children.audio_input.classList.add(
+			'synthez-node-connector',
+			'synthez-node-connector-input',
+			'synthez-node-connector-audio'
+		);
+
+		this.dom_element_children.audio_output = document.createElement('div');
+		this.dom_element_children.audio_output.classList.add(
+			'synthez-node-connector',
+			'synthez-node-connector-output',
+			'synthez-node-connector-audio'
+		);
+
+		this.dom_element_children.message_input = document.createElement('div');
+		this.dom_element_children.message_input.classList.add(
+			'synthez-node-connector',
+			'synthez-node-connector-input',
+			'synthez-node-connector-message'
+		);
+
+		this.dom_element_children.message_output = document.createElement('div');
+		this.dom_element_children.message_output.classList.add(
+			'synthez-node-connector',
+			'synthez-node-connector-output',
+			'synthez-node-connector-message'
+		);
 
 		for(var child_name in this.dom_element_children) {
 			this.dom_element.append(this.dom_element_children[child_name]);

@@ -1,3 +1,16 @@
+
+
+
+
+$base-dom-node-color: #8eb1c2;
+$base-dom-node-title-height: 22px;
+
+$base-dom-connector-size: 26px;
+$base-dom-audio-connector-color: #e2866e;
+$base-dom-message-connector-color: #6ee2ab;
+
+
+
 * {
 	box-sizing: border-box;
 }
@@ -9,8 +22,19 @@ html, body {
 	font-family: Helvetica, Arial, Verdana, Sans;
 }
 
+.synthez-main-dom-container {
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+}
+
+
+
+
 /* Opened container nodes */
-.synthez-audio-node.synthez-container-is-opened {
+.synthez-dom-node.synthez-dom-is-opened {
 	position: absolute;
 	top: 20px;
 	left: 20px;
@@ -20,7 +44,7 @@ html, body {
 	border: 2px solid #ccc;
 
 	$container-title-height: 32px;
-
+ 
 	> .synthez-node-title {
 		position: absolute;
 		top: 0;
@@ -42,38 +66,130 @@ html, body {
 		height: 100%;
 		padding-top: $container-title-height;
 	}
+
+	> .synthez-node-connector {
+		display: none;
+	}
+
+	.svg-connection-container {
+		.synthez-connection-svg-line {
+			stroke-width: 2px;
+
+			&.synthez-connection-svg-line-audio {
+				stroke: darken($base-dom-audio-connector-color, 20%);
+			}
+
+			&.synthez-connection-svg-line-message {
+				stroke: darken($base-dom-message-connector-color, 20%);
+			}
+			
+		}
+	}
 }
 
 /* Every regular nodes and closed container nodes */
-.synthez-audio-node:not(.synthez-container-is-opened) {
+.synthez-dom-node:not(.synthez-dom-is-opened) {
 	position: absolute;
 	width: 200px;
 	height: 100px;
-	background: #8eb1c2;
-	border: 1px solid #6e8a97;
-
-	$audio-node-title-height: 22px;
+	border-top: 1px solid darken($base-dom-node-color, 20%);
+	border-bottom: 1px solid darken($base-dom-node-color, 30%);
 
 	> .synthez-node-title {
 		position: absolute;
 		font-size: 12px;
-		background: rgba(0,0,0,0.2);
+		background: darken($base-dom-node-color, 10%);
 		text-align: center;
 		top: 0;
 		left: 0;
 		width: 100%;
-		height: $audio-node-title-height;
-		line-height: $audio-node-title-height;
+		height: $base-dom-node-title-height;
+		line-height: $base-dom-node-title-height;
 		color: rgba(255, 255, 255, 0.8);
+		z-index: 2;
+		border: 1px solid darken($base-dom-node-color, 20%);
+		border-bottom-color: darken($base-dom-node-color, 25%);
+		border-top-color: lighten($base-dom-node-color, 10%);
 	}
 
 	> .synthez-node-body {
 		position: absolute;
 		left: 0;
 		width: 100%;
-		top: $audio-node-title-height;
+		top: $base-dom-node-title-height;
 		bottom: 0;
-		background: transparent no-repeat center;
+		background: $base-dom-node-color no-repeat center;
 		background-size: 30%;
+		border: 1px solid darken($base-dom-node-color, 20%);
+		border-top-color: lighten($base-dom-node-color, 10%);
+		border-bottom: none;
+		z-index: 2;
+	}
+
+	> .synthez-node-connector {
+		position: absolute;
+		width: $base-dom-connector-size;
+		height: $base-dom-connector-size;
+		border: 1px solid;
+		z-index: 1;
+		border-radius: 100%;
+		opacity: 0.5;
+
+		&.connected {
+			opacity: 1;
+		}
+
+		&:after {
+			content: ' ';
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translateX(-50%) translateY(-50%);
+		}
+
+
+		&.synthez-node-connector-input {
+			left: -$base-dom-connector-size * 0.5;
+			border-top-right-radius: 0;
+			border-bottom-right-radius: 0;
+
+			&.connected {
+				left: -$base-dom-connector-size * 0.8;
+			}
+		}
+
+		&.synthez-node-connector-output {
+			right: -$base-dom-connector-size * 0.5;
+			border-top-left-radius: 0;
+			border-bottom-left-radius: 0;
+
+			&.connected {
+				right: -$base-dom-connector-size * 0.8;
+			}
+		}
+
+		&.synthez-node-connector-audio {
+			background: $base-dom-audio-connector-color;
+			border-color: darken($base-dom-audio-connector-color, 25%);
+			top: 4px;
+
+			&:after { 
+				background-image: url('../img/audio_signal_connector_symbol.svg');
+				width: $base-dom-connector-size * 0.8;
+				height: $base-dom-connector-size * 0.8;
+			}
+		}
+
+		&.synthez-node-connector-message {
+			background: $base-dom-message-connector-color;
+			border-color: darken($base-dom-message-connector-color, 25%);
+			bottom: 4px;
+
+			&:after { 
+				background-image: url('../img/message_signal_connector_symbol.svg');
+				width: $base-dom-connector-size * 0.6;
+				height: $base-dom-connector-size * 0.6;
+			}
+		}
 	}
 }

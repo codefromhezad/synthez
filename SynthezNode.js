@@ -1,4 +1,7 @@
-var AUDIO_TIMER_EPSILON = 0.0001;
+const AUDIO_TIMER_EPSILON = 0.0001;
+
+const CONNECTION_TYPE_AUDIO = "audio";
+const CONNECTION_TYPE_MESSAGE = "message";
 
 var SynthezNode = {
 	/* Global private data */
@@ -6,8 +9,10 @@ var SynthezNode = {
 	__definitions_base_conf: {},
 
 	__identifiers_count: {},
+	__connections: {},
 
 	__root_container_node: null,
+	__main_dom_container: null,
 
 	__audio_context: null,
 
@@ -16,11 +21,14 @@ var SynthezNode = {
 	__started: false,
 
 	/* Front public methods */
-	start: function() {
+	start: function(main_container_id) {
 		if( SynthezNode.__started ) {
 			console.warn('Synthez Global Timer already running. Aborting new start.');
 			return false;
 		}
+
+		SynthezNode.__main_dom_container = document.getElementById(main_container_id);
+		SynthezNode.__main_dom_container.classList.add('synthez-main-dom-container');
 
 		SynthezNode.__global_timer_start_time = Date.now() * 0.001;
 		SynthezNode.__started = true;
@@ -127,15 +135,73 @@ var SynthezNode = {
 	},
 
 	/* Frontend public methods */
-	connect_nodes: function(from, to, skip_web_audio_connect) {
-		to.input_nodes[from.identifier] = from;
-		from.output_nodes[to.identifier] = to;
-
-		if( skip_web_audio_connect === undefined && from.web_audio_node_handle && to.web_audio_node_handle ) {
-			from.web_audio_node_handle.connect(to.web_audio_node_handle);
+	connect_nodes: function(from, to, connection_type) {
+		if( connection_type === undefined ) {
+			connection_type = CONNECTION_TYPE_AUDIO;
 		}
 
-		from.trigger('on_connect_to', to);
-		from.trigger('on_connect_from', from);
+		if( from.parent_container.identifier != to.parent_container.identifier ) {
+			console.error("Can't connect nodes not belonging to the same container: ", from, to);
+			return false;
+		}
+
+		switch(connection_type) {
+			case CONNECTION_TYPE_AUDIO:
+				from.audio_output_nodes[to.identifier] = to;
+				if( from.web_audio_node_handle && to.web_audio_node_handle ) {
+					from.web_audio_node_handle.connect(to.web_audio_node_handle);
+				}
+				break;
+			case CONNECTION_TYPE_MESSAGE:
+				from.message_output_nodes[to.identifier] = to;
+				break;
+		}
+
+		from.set_dom_connector_connection_style(connection_type, 'output', true);
+		to.set_dom_connector_connection_style(connection_type, 'input', true);
+
+		SynthezNode.make_connection_data(from, to, connection_type);
 	},
+
+	get_connection_identifier: function(from, to, connection_type) {
+		return from.identifier+'_'+to.identifier+'_'+connection_type;
+	},
+
+	make_connection_data: function(from, to, connection_type) {
+		var conn_id = SynthezNode.get_connection_identifier(from, to, connection_type);
+
+		if( SynthezNode.__connections[conn_id] ) {
+			console.warn('The connection "'+conn_id+'" already exists. Aborting.');
+			return false;
+		}
+
+		var connection_container = from.parent_container;
+		var svg_wrapper = connection_container.props.svg_wrapper;
+
+		var container_rect = connection_container.dom_element.getBoundingClientRect();
+
+		var from_output_connector = from.dom_element_children[connection_type+'_output'];
+		var to_input_connector = to.dom_element_children[connection_type+'_input'];
+
+		var from_cntor_rect = from_output_connector.getBoundingClientRect();
+		var to_cntor_rect = to_input_connector.getBoundingClientRect();
+
+		SynthezNode.__connections[conn_id] = {
+			from: from,
+			to: to,
+			connection_type: connection_type,
+			connection_container: connection_container,
+			line: svg_wrapper.line(
+				from_cntor_rect.width * 0.5 + from_cntor_rect.x - container_rect.x, 
+				from_cntor_rect.height * 0.5 + from_cntor_rect.y - container_rect.y - 1, 
+				to_cntor_rect.width * 0.5 + to_cntor_rect.x - container_rect.x, 
+				to_cntor_rect.height * 0.5 + to_cntor_rect.y - container_rect.y - 1, 
+			)
+		};
+
+		SynthezNode.__connections[conn_id].line.node.classList.add('synthez-connection-svg-line', 'synthez-connection-svg-line-'+connection_type);
+		SynthezNode.__connections[conn_id].line.stroke({
+			width: 1,
+		});
+	}
 };

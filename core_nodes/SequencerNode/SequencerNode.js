@@ -2,6 +2,10 @@ const DEFAULT_BPM = 120;
 
 SynthezNode.define('SequencerNode', {
 	nice_name: 'Sequencer',
+	icon: {
+		file: 'core_nodes/SequencerNode/sequencer_icon.svg',
+		credits: 'Stairs by Xela Ub from the Noun Project'
+	},
 	defaults: {
 		bpm: DEFAULT_BPM,
 		label: 'Unlabeled sequencer',
@@ -47,7 +51,7 @@ SynthezNode.define('SequencerNode', {
 					that.props.__scheduler.insert(
 						t0 + data_message.local_trigger_time,
 						function(e) {
-							that.send_message_data_to_outputs(e.args.data_message);
+							that.send_message_data_to_message_outputs(e.args.data_message);
 						},
 						{ data_message: data_message }
 					);
@@ -59,11 +63,6 @@ SynthezNode.define('SequencerNode', {
 		/* Public methods */
 		set_label: function(new_label) {
 			this.settings.label = new_label;
-		},
-
-		add_data_message: function(data_message) {
-			data_message.__list_index = this.props.messages_list.push(data_message) - 1;
-			return data_message.__list_index;
 		},
 
 		add_message_note: function(note_name, start_beat, beat_length) {
@@ -79,10 +78,6 @@ SynthezNode.define('SequencerNode', {
 			this.add_data_message(new SynthezDataMessage(MESSAGE_TYPE_SETTING, start_time, {
 				frequency: frequency
 			})); 
-		},
-
-		remove_data_message: function(message_index) {
-			this.props.__scheduler.remove(message_index);
 		},
 
 		play: function() {
@@ -102,7 +97,7 @@ SynthezNode.define('SequencerNode', {
 		stop: function() {
 			this.props.__scheduler.stop(true);
 			this.props.__scheduler.removeAll();
-			this.send_message_data_to_outputs(new SynthezDataMessage(MESSAGE_TYPE_SETTING, 0.0, 'stop'));
+			this.send_message_data_to_message_outputs(new SynthezDataMessage(MESSAGE_TYPE_SETTING, 0.0, 'stop'));
 		}
 
 		// open: function() {
@@ -110,7 +105,7 @@ SynthezNode.define('SequencerNode', {
 		// 		this.props.nodes[id].spawn_dom_element();
 		// 	}
 		// 	this.container_is_opened = true;
-		// 	this.dom_element.classList.add('synthez-container-is-opened');
+		// 	this.dom_element.classList.add('synthez-dom-is-opened');
 		// },
 
 		// close: function() {
@@ -118,7 +113,7 @@ SynthezNode.define('SequencerNode', {
 		// 		this.props.nodes[id].destroy_dom_element();
 		// 	}
 		// 	this.container_is_opened = false;
-		// 	this.dom_element.classList.remove('synthez-container-is-opened');
+		// 	this.dom_element.classList.remove('synthez-dom-is-opened');
 		// }
 	}
 });

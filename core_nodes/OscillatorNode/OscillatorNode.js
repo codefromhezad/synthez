@@ -69,8 +69,8 @@ SynthezNode.define('OscillatorNode', {
 			this.props.__local_gain_node = this.audio_context.createGain();
 			this.web_audio_node_handle.connect(this.props.__local_gain_node);
 
-			for(var out_node_index in this.output_nodes) {
-				this.props.__local_gain_node.connect(this.output_nodes[out_node_index].web_audio_node_handle);
+			for(var out_node_index in this.audio_output_nodes) {
+				this.props.__local_gain_node.connect(this.audio_output_nodes[out_node_index].web_audio_node_handle);
 			}
 
 			this.props.__local_gain_node.gain.setValueAtTime(0, this.audio_context.currentTime);
@@ -81,7 +81,7 @@ SynthezNode.define('OscillatorNode', {
 
 		kill: function() {
 			this.web_audio_node_handle.stop(this.audio_context.currentTime);
-			this.disconnect_all_outputs();
+			this.disconnect_all_audio_outputs();
 
 			this.props.is_initialized = false;
 		},
