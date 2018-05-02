@@ -107,6 +107,8 @@ SynthezNode.define('ContainerNode', {
 				new_node.spawn_dom_element();
 			}
 
+			new_node.trigger('after_spawn');
+
 			return new_node;
 		},
 

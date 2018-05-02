@@ -17,6 +17,9 @@ SynthezNode.define('SequencerNode', {
 
 		__scheduler: null,
 	},
+	ux_quick_access_elements: {
+		play_pause: '<div class="synthez-ux-button synthez-seq-button synthez-seq-play-pause" data-action="play">Play</div>'
+	},
 	listeners: {
 		on_init: function() {
 			this.props.__scheduler = new WebAudioScheduler({ context: this.audio_context });
@@ -24,19 +27,26 @@ SynthezNode.define('SequencerNode', {
 
 			var that = this;
 
-			// this.props.__scheduler.on("start", function() {
-			//   console.log('start');
-			// });
-
-			// this.props.__scheduler.on("stop", function() {
-			//   console.log('stop');
-			// });
-
 			this.props.__scheduler.on("processed", function(e) {
 				if( e.playbackTime >= that.props.__started_time + that.props.__full_duration ) {
 					that.stop();
 				}
 			});
+		},
+		after_spawn: function() {
+			var node = this;
+
+			/* Setup UX Quick access listeners */
+			var playpause_button = this.dom_element_children.ux_quick_access_container.getElementsByClassName('synthez-seq-play-pause')[0];
+			playpause_button.addEventListener('click', function(e) {
+				var action = this.getAttribute('data-action');
+
+				if( action == "play" ) {
+					node.play();
+				} else if( action == "stop" ) {
+					node.stop();
+				}
+			}, false);
 		}
 	},
 	methods: {
@@ -83,6 +93,10 @@ SynthezNode.define('SequencerNode', {
 		play: function() {
 			this.stop();
 			
+			var playpause_button = this.dom_element_children.ux_quick_access_container.getElementsByClassName('synthez-seq-play-pause')[0];
+			playpause_button.setAttribute('data-action', 'stop');
+			playpause_button.textContent = "Stop";
+			
 			this.add_data_message(new SynthezDataMessage(MESSAGE_TYPE_SETTING, 0.0, 'start')); 
 			this.props.__started_time = 0;
 
@@ -95,6 +109,11 @@ SynthezNode.define('SequencerNode', {
 		},
 
 		stop: function() {
+			var playpause_button = this.dom_element_children.ux_quick_access_container.getElementsByClassName('synthez-seq-play-pause')[0];
+
+			playpause_button.setAttribute('data-action', 'play');
+			playpause_button.textContent = "Play";
+
 			this.props.__scheduler.stop(true);
 			this.props.__scheduler.removeAll();
 			this.send_message_data_to_message_outputs(new SynthezDataMessage(MESSAGE_TYPE_SETTING, 0.0, 'stop'));

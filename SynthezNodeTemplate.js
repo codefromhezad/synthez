@@ -21,11 +21,14 @@ var SynthezNodeTemplate = function(node_class_name) {
 	this.dom_element = null;
 	this.dom_element_children = {
 		title: null,
-		body: null
+		body: null,
+		ux_quick_access_container: null,
 	}
 
 	this.position = {};
 	this.icon = {};
+	this.ux_quick_access_elements = {};
+	this.style_inject = null;
 
 	this.listeners = {
 		on_message_data: function(message_data) {
@@ -148,6 +151,20 @@ var SynthezNodeTemplate = function(node_class_name) {
 		this.dom_element_children.body = document.createElement('div');
 		this.dom_element_children.body.classList.add('synthez-node-body');
 
+		if( this.style_inject ) {
+			Helper.inject_css_file(this.style_inject);
+		}
+
+		if( Object.keys(this.ux_quick_access_elements).length ) {
+			this.dom_element_children.ux_quick_access_container = document.createElement('div');
+			this.dom_element_children.ux_quick_access_container.classList.add('synthez-node-quick-settings-container');
+
+			for( var element_id in this.ux_quick_access_elements ) {
+				var ux_dom_element = Helper.create_element_from_HTML(this.ux_quick_access_elements[element_id]);
+				this.dom_element_children.ux_quick_access_container.appendChild(ux_dom_element);
+			}
+		}
+
 		if( this.icon && this.icon.file ) {
 			this.dom_element_children.body.style.backgroundImage = "url('"+this.icon.file+"')";
 		}
@@ -181,7 +198,9 @@ var SynthezNodeTemplate = function(node_class_name) {
 		);
 
 		for(var child_name in this.dom_element_children) {
-			this.dom_element.append(this.dom_element_children[child_name]);
+			if( this.dom_element_children[child_name] ) {
+				this.dom_element.append(this.dom_element_children[child_name]);
+			}
 		}
 
 		this.set_name(this.nice_name);

@@ -80,6 +80,7 @@ var SynthezNode = {
 
 		Object.assign(new_node.props, from_conf.props || {}, node_conf.props || {});
 		Object.assign(new_node.listeners, from_conf.listeners || {}, node_conf.listeners || {});
+		Object.assign(new_node.ux_quick_access_elements, from_conf.ux_quick_access_elements || {}, node_conf.ux_quick_access_elements || {});
 
 		if( from_conf.methods ) {
 			for(var method_name in from_conf.methods) {
@@ -149,7 +150,7 @@ var SynthezNode = {
 			case CONNECTION_TYPE_AUDIO:
 				from.audio_output_nodes[to.identifier] = to;
 				to.audio_input_nodes[from.identifier] = from;
-				
+
 				if( from.web_audio_node_handle && to.web_audio_node_handle ) {
 					from.web_audio_node_handle.connect(to.web_audio_node_handle);
 				}
