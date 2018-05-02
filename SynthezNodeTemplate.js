@@ -12,6 +12,8 @@ var SynthezNodeTemplate = function(node_class_name) {
 
 	this.audio_output_nodes = {};
 	this.message_output_nodes = {};
+	this.audio_input_nodes = {};
+	this.message_input_nodes = {};
 
 	this.web_audio_node_handle = null;
 	
@@ -82,8 +84,14 @@ var SynthezNodeTemplate = function(node_class_name) {
 		this.position = position;
 		
 		if( this.dom_element && this.position ) {
-			for(var rule in this.position) {
-				this.dom_element.style[rule] = this.position[rule];
+			if( this.position.x ) {
+				this.dom_element.style['left'] = this.position.x + 'px';
+				this.dom_element.setAttribute('data-x', this.position.x);
+			}
+
+			if( this.position.y ) {
+				this.dom_element.style['top'] = this.position.y + 'px';
+				this.dom_element.setAttribute('data-y', this.position.y);
 			}
 		}	
 	}
@@ -122,6 +130,8 @@ var SynthezNodeTemplate = function(node_class_name) {
 		this.dom_element.classList.add(this.get_dom_element_class_name());
 		this.dom_element.classList.add('synthez-dom-node');
 
+		this.dom_element.setAttribute('data-identifier', this.identifier);
+
 		if( this.position ) {
 			this.set_position(this.position);
 		}
@@ -138,7 +148,7 @@ var SynthezNodeTemplate = function(node_class_name) {
 		this.dom_element_children.body = document.createElement('div');
 		this.dom_element_children.body.classList.add('synthez-node-body');
 
-		if( this.icon ) {
+		if( this.icon && this.icon.file ) {
 			this.dom_element_children.body.style.backgroundImage = "url('"+this.icon.file+"')";
 		}
 

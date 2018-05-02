@@ -32,6 +32,63 @@ SynthezNode.define('ContainerNode', {
 			this.props.svg_wrapper.viewbox(0, 0, w, h);
 		},
 
+		__setup_ux_listeners: function() {
+			var that = this;
+			var container_id = that.get_dom_element_id();
+
+			/* InteractJS */
+			(function(that, container_id) {
+
+				interact('#'+container_id+' .synthez-node-body .synthez-dom-node')
+					.draggable({
+						allowFrom: '.synthez-node-title',
+						restrict: {
+							restriction: that.dom_element_children.body
+						},
+						onmove: function(event) {
+							var target = event.target,
+						        x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+						        y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+						    var node_identifier = target.getAttribute('data-identifier');
+						    var target_node = that.props.nodes[node_identifier];
+
+						    /* Move node */
+						    target_node.set_position({x: x, y: y});
+
+						    /* Update Node SVG connexions */
+						    for(var id in target_node.audio_output_nodes) {
+						    	var to_node = target_node.audio_output_nodes[id];
+						    	SynthezNode.update_connection_svg_line(target_node, to_node, CONNECTION_TYPE_AUDIO);
+						    }
+						    for(var id in target_node.message_output_nodes) {
+						    	var to_node = target_node.message_output_nodes[id];
+						    	SynthezNode.update_connection_svg_line(target_node, to_node, CONNECTION_TYPE_MESSAGE);
+						    }
+
+						    for(var id in target_node.audio_input_nodes) {
+						    	var from_node = target_node.audio_input_nodes[id];
+						    	SynthezNode.update_connection_svg_line(from_node, target_node, CONNECTION_TYPE_AUDIO);
+						    }
+						    for(var id in target_node.message_input_nodes) {
+						    	var from_node = target_node.message_input_nodes[id];
+						    	SynthezNode.update_connection_svg_line(from_node, target_node, CONNECTION_TYPE_MESSAGE);
+						    }
+						}
+					});
+
+			})(that, container_id);
+			
+		},
+
+		__destroy_ux_listeners: function() {
+			var that = this;
+			var container_id = that.get_dom_element_id();
+
+			/* InteractJS */
+			interact('#'+container_id+' .synthez-node-body .synthez-dom-node').unset();
+		},
+
 		/* Public Container methods */
 		add_node: function(node_class_name, user_options) {
 			var new_node_builder = SynthezNode.__definitions[node_class_name];
@@ -61,6 +118,8 @@ SynthezNode.define('ContainerNode', {
 			this.dom_element.classList.add('synthez-dom-is-opened');
 
 			this.__update_svg_wrapper_size();
+
+			this.__setup_ux_listeners();
 		},
 
 		close: function() {
@@ -69,6 +128,8 @@ SynthezNode.define('ContainerNode', {
 			}
 			this.container_is_opened = false;
 			this.dom_element.classList.remove('synthez-dom-is-opened');
+
+			this.__destroy_ux_listeners();
 		}
 	}
 });

@@ -12,6 +12,7 @@
 
 
  
+		<script src="vendor/interact.min.js"></script>
 		<script src="vendor/web-audio-scheduler.min.js"></script>
 		<script src="vendor/svg.min.js"></script>
 
@@ -37,10 +38,10 @@
 			var root_container = SynthezNode.create_root_container_node();
 
 			var osc = root_container.add_node('SineOscillatorNode');
-			osc.set_position({top: '50px', left: '320px'});
+			osc.set_position({y: 50, x: 320});
 
 			var out = root_container.add_node('AudioOutputNode');
-			out.set_position({top: '50px', left: '620px'});
+			out.set_position({y: 50, x: 620});
 
 			SynthezNode.connect_nodes(osc, out);
 
@@ -49,7 +50,7 @@
 			var seq = root_container.add_node('SequencerNode', {
 				bpm: 120
 			});
-			seq.set_position({top: '50px', left: '20px'});
+			seq.set_position({y: 50, x: 20});
 			
 			SynthezNode.connect_nodes(seq, osc, CONNECTION_TYPE_MESSAGE);
 

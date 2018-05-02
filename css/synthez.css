@@ -35,7 +35,8 @@ html, body {
     height: 32px;
     line-height: 32px;
     color: rgba(0, 0, 0, 0.6);
-    padding: 0 20px; }
+    padding: 0 20px;
+    cursor: pointer; }
   .synthez-dom-node.synthez-dom-is-opened > .synthez-node-body {
     position: absolute;
     top: 0;
@@ -96,7 +97,12 @@ html, body {
     -webkit-border-radius: 100%;
        -moz-border-radius: 100%;
             border-radius: 100%;
-    opacity: 0.5; }
+    opacity: 0.5;
+    cursor: pointer;
+    -webkit-transition: left 0.2s, right 0.2s;
+    -o-transition: left 0.2s, right 0.2s;
+    -moz-transition: left 0.2s, right 0.2s;
+    transition: left 0.2s, right 0.2s; }
     .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.connected {
       opacity: 1; }
     .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector:after {
@@ -117,6 +123,8 @@ html, body {
       -webkit-border-bottom-right-radius: 0;
          -moz-border-radius-bottomright: 0;
               border-bottom-right-radius: 0; }
+      .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-input:hover {
+        left: -16.9px; }
       .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-input.connected {
         left: -20.8px; }
     .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-output {
@@ -127,6 +135,8 @@ html, body {
       -webkit-border-bottom-left-radius: 0;
          -moz-border-radius-bottomleft: 0;
               border-bottom-left-radius: 0; }
+      .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-output:hover {
+        right: -16.9px; }
       .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-output.connected {
         right: -20.8px; }
     .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-audio {

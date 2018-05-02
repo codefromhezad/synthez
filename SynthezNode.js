@@ -148,12 +148,15 @@ var SynthezNode = {
 		switch(connection_type) {
 			case CONNECTION_TYPE_AUDIO:
 				from.audio_output_nodes[to.identifier] = to;
+				to.audio_input_nodes[from.identifier] = from;
+				
 				if( from.web_audio_node_handle && to.web_audio_node_handle ) {
 					from.web_audio_node_handle.connect(to.web_audio_node_handle);
 				}
 				break;
 			case CONNECTION_TYPE_MESSAGE:
 				from.message_output_nodes[to.identifier] = to;
+				to.message_input_nodes[from.identifier] = from;
 				break;
 		}
 
@@ -167,11 +170,11 @@ var SynthezNode = {
 		return from.identifier+'_'+to.identifier+'_'+connection_type;
 	},
 
-	make_connection_data: function(from, to, connection_type) {
+	update_connection_svg_line: function(from, to, connection_type) {
 		var conn_id = SynthezNode.get_connection_identifier(from, to, connection_type);
 
-		if( SynthezNode.__connections[conn_id] ) {
-			console.warn('The connection "'+conn_id+'" already exists. Aborting.');
+		if( ! SynthezNode.__connections[conn_id] ) {
+			console.warn('The connection "'+conn_id+'" doesn\'t exist. Aborting.');
 			return false;
 		}
 
@@ -186,18 +189,34 @@ var SynthezNode = {
 		var from_cntor_rect = from_output_connector.getBoundingClientRect();
 		var to_cntor_rect = to_input_connector.getBoundingClientRect();
 
+		SynthezNode.__connections[conn_id].line.plot(
+			from_cntor_rect.width * 0.5 + from_cntor_rect.x - container_rect.x, 
+			from_cntor_rect.height * 0.5 + from_cntor_rect.y - container_rect.y - 1, 
+			to_cntor_rect.width * 0.5 + to_cntor_rect.x - container_rect.x, 
+			to_cntor_rect.height * 0.5 + to_cntor_rect.y - container_rect.y - 1
+		)
+	},
+
+	make_connection_data: function(from, to, connection_type) {
+		var conn_id = SynthezNode.get_connection_identifier(from, to, connection_type);
+
+		if( SynthezNode.__connections[conn_id] ) {
+			console.warn('The connection "'+conn_id+'" already exists. Aborting.');
+			return false;
+		}
+
+		var connection_container = from.parent_container;
+		var svg_wrapper = connection_container.props.svg_wrapper;
+
 		SynthezNode.__connections[conn_id] = {
 			from: from,
 			to: to,
 			connection_type: connection_type,
 			connection_container: connection_container,
-			line: svg_wrapper.line(
-				from_cntor_rect.width * 0.5 + from_cntor_rect.x - container_rect.x, 
-				from_cntor_rect.height * 0.5 + from_cntor_rect.y - container_rect.y - 1, 
-				to_cntor_rect.width * 0.5 + to_cntor_rect.x - container_rect.x, 
-				to_cntor_rect.height * 0.5 + to_cntor_rect.y - container_rect.y - 1, 
-			)
+			line: svg_wrapper.line()
 		};
+
+		SynthezNode.update_connection_svg_line(from, to, connection_type);
 
 		SynthezNode.__connections[conn_id].line.node.classList.add('synthez-connection-svg-line', 'synthez-connection-svg-line-'+connection_type);
 		SynthezNode.__connections[conn_id].line.stroke({
