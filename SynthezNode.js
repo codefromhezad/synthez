@@ -167,6 +167,41 @@ var SynthezNode = {
 		SynthezNode.make_connection_data(from, to, connection_type);
 	},
 
+	disconnect_nodes: function(from, to, connection_type) {
+		if( connection_type === undefined ) {
+			connection_type = CONNECTION_TYPE_AUDIO;
+		}
+
+		var conn_id = SynthezNode.get_connection_identifier(from, to, connection_type);
+
+		if( ! SynthezNode.__connections[conn_id] ) {
+			console.warn('The connection "'+conn_id+'" doesn\'t exist. Aborting.');
+			return false;
+		}
+
+		SynthezNode.remove_connection_data(from, to, connection_type);
+
+		switch(connection_type) {
+			case CONNECTION_TYPE_AUDIO:
+				delete from.audio_output_nodes[to.identifier];
+				delete to.audio_input_nodes[from.identifier];
+
+				if( from.web_audio_node_handle && to.web_audio_node_handle ) {
+					to.web_audio_node_handle.disconnect(from.web_audio_node_handle);
+				}
+
+				break;
+			case CONNECTION_TYPE_MESSAGE:
+				delete from.message_output_nodes[to.identifier];
+				delete to.message_input_nodes[from.identifier];
+
+				break;
+		}
+
+		from.set_dom_connector_connection_style(connection_type, 'output', false);
+		to.set_dom_connector_connection_style(connection_type, 'input', false);
+	},
+
 	get_connection_identifier: function(from, to, connection_type) {
 		return from.identifier+'_'+to.identifier+'_'+connection_type;
 	},
@@ -196,6 +231,19 @@ var SynthezNode = {
 			to_cntor_rect.width * 0.5 + to_cntor_rect.x - container_rect.x, 
 			to_cntor_rect.height * 0.5 + to_cntor_rect.y - container_rect.y - 1
 		)
+	},
+
+	remove_connection_data: function(from, to, connection_type) {
+		var conn_id = SynthezNode.get_connection_identifier(from, to, connection_type);
+
+		if( ! SynthezNode.__connections[conn_id] ) {
+			console.warn('The connection "'+conn_id+'" doesn\'t exist. Aborting.');
+			return false;
+		}
+
+		SynthezNode.__connections[conn_id].line.remove();
+
+		delete SynthezNode.__connections[conn_id];
 	},
 
 	make_connection_data: function(from, to, connection_type) {
