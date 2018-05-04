@@ -39,19 +39,37 @@ SynthezNode.define('ContainerNode', {
 			/* InteractJS */
 			(function(that, container_id) {
 
+				var __current_drag = {
+					handle: null,
+					target: null,
+					node_identifier: null
+				};
+
 				interact('#'+container_id+' .synthez-node-body .synthez-dom-node')
 					.draggable({
-						allowFrom: '.synthez-node-title',
+						allowFrom: '.synthez-node-title, .synthez-node-connector',
 						restrict: {
 							restriction: that.dom_element_children.body
 						},
+						onstart: function(event) {
+							__current_drag.target = event.target;
+							__current_drag.handle = event.interaction._eventTarget;
+							__current_drag.node_identifier = event.target.getAttribute('data-identifier');
+							__current_drag.target_node = that.props.nodes[__current_drag.node_identifier];
+						},
+						onend: function(event) {
+							__current_drag.target = null;
+							__current_drag.handle = null;
+							__current_drag.node_identifier = null;
+							__current_drag.target_node = null;
+						},
 						onmove: function(event) {
-							var target = event.target,
+
+							var target = __current_drag.target,
 						        x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
 						        y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
-						    var node_identifier = target.getAttribute('data-identifier');
-						    var target_node = that.props.nodes[node_identifier];
+						    var target_node = __current_drag.target_node;
 
 						    /* Move node */
 						    target_node.set_position({x: x, y: y});
@@ -75,7 +93,7 @@ SynthezNode.define('ContainerNode', {
 						    	SynthezNode.update_connection_svg_line(from_node, target_node, CONNECTION_TYPE_MESSAGE);
 						    }
 						}
-					});
+					})
 
 			})(that, container_id);
 			
