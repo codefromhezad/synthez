@@ -1,5 +1,9 @@
 const ROOT_NODES_CONTAINER_ID = 'root';
 
+const DRAG_INTERACTION_TYPE_MOVE = "drag_move";
+const DRAG_INTERACTION_TYPE_CONNECT = "drag_connect";
+
+
 SynthezNode.define('ContainerNode', {
 	nice_name: 'Container',
 	defaults: {},
@@ -7,6 +11,17 @@ SynthezNode.define('ContainerNode', {
 		nodes: {},
 		container_is_opened: false,
 		svg_wrapper: null,
+
+		__current_drag: {
+			handle: null,
+			target: null,
+			target_node: null,
+			node_identifier: null,
+			drag_type: null,
+			drag_connect_inout: null,
+			drag_connect_type: null,
+			drag_svg_line: null,
+		}
 	},
 	listeners: {
 		on_init: function() {
@@ -32,6 +47,32 @@ SynthezNode.define('ContainerNode', {
 			this.props.svg_wrapper.viewbox(0, 0, w, h);
 		},
 
+		__reset_drag_ux_data: function() {
+			var __current_drag = this.props.__current_drag;
+
+			if( __current_drag.target === null ) {
+				return;
+			}
+
+			__current_drag.handle.classList.remove('synthez-drag-source');
+
+			__current_drag.target = null;
+			__current_drag.handle = null;
+			__current_drag.node_identifier = null;
+			__current_drag.target_node = null;
+			__current_drag.drag_type = null;
+			__current_drag.drag_connect_inout = null;
+			__current_drag.drag_connect_type = null;
+			__current_drag.drag_connect_dest_inout = null;
+			__current_drag.drag_connect_dest_type = null;
+			__current_drag.drag_connect_dest_node_identifier = null;
+
+			if( __current_drag.drag_svg_line ) {
+				__current_drag.drag_svg_line.remove();
+				__current_drag.drag_svg_line = null;
+			}
+		},
+
 		__setup_ux_listeners: function() {
 			var that = this;
 			var container_id = that.get_dom_element_id();
@@ -39,61 +80,176 @@ SynthezNode.define('ContainerNode', {
 			/* InteractJS */
 			(function(that, container_id) {
 
-				var __current_drag = {
-					handle: null,
-					target: null,
-					node_identifier: null
-				};
+				interact(
+					'#'+container_id+' .synthez-node-body .synthez-dom-node'
+				).draggable({
+					allowFrom: '.synthez-node-title, .synthez-node-connector',
+					ignoreFrom: '.synthez-node-connector.connected',
+					restrict: {
+						restriction: that.dom_element_children.body
+					},
+					onstart: function(event) {
+						var __current_drag = that.props.__current_drag;
 
-				interact('#'+container_id+' .synthez-node-body .synthez-dom-node')
-					.draggable({
-						allowFrom: '.synthez-node-title, .synthez-node-connector',
-						restrict: {
-							restriction: that.dom_element_children.body
-						},
-						onstart: function(event) {
-							__current_drag.target = event.target;
-							__current_drag.handle = event.interaction._eventTarget;
-							__current_drag.node_identifier = event.target.getAttribute('data-identifier');
-							__current_drag.target_node = that.props.nodes[__current_drag.node_identifier];
-						},
-						onend: function(event) {
-							__current_drag.target = null;
-							__current_drag.handle = null;
-							__current_drag.node_identifier = null;
-							__current_drag.target_node = null;
-						},
-						onmove: function(event) {
+						__current_drag.target = event.target;
+						__current_drag.handle = event.interaction._eventTarget;
+						__current_drag.node_identifier = event.target.getAttribute('data-identifier');
+						__current_drag.target_node = that.props.nodes[__current_drag.node_identifier];
 
-							var target = __current_drag.target,
-						        x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
-						        y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+						__current_drag.handle.classList.add('synthez-drag-source');
 
-						    var target_node = __current_drag.target_node;
+						if( __current_drag.handle.classList.contains('synthez-node-title') ) {
 
-						    /* Move node */
-						    target_node.set_position({x: x, y: y});
+							__current_drag.drag_type = DRAG_INTERACTION_TYPE_MOVE;
 
-						    /* Update Node SVG connexions */
-						    for(var id in target_node.audio_output_nodes) {
-						    	var to_node = target_node.audio_output_nodes[id];
-						    	SynthezNode.update_connection_svg_line(target_node, to_node, CONNECTION_TYPE_AUDIO);
-						    }
-						    for(var id in target_node.message_output_nodes) {
-						    	var to_node = target_node.message_output_nodes[id];
-						    	SynthezNode.update_connection_svg_line(target_node, to_node, CONNECTION_TYPE_MESSAGE);
-						    }
+						} else if( __current_drag.handle.classList.contains('synthez-node-connector') ) {
 
-						    for(var id in target_node.audio_input_nodes) {
-						    	var from_node = target_node.audio_input_nodes[id];
-						    	SynthezNode.update_connection_svg_line(from_node, target_node, CONNECTION_TYPE_AUDIO);
-						    }
-						    for(var id in target_node.message_input_nodes) {
-						    	var from_node = target_node.message_input_nodes[id];
-						    	SynthezNode.update_connection_svg_line(from_node, target_node, CONNECTION_TYPE_MESSAGE);
-						    }
+							__current_drag.drag_type = DRAG_INTERACTION_TYPE_CONNECT;
+
+							if( __current_drag.handle.classList.contains('synthez-node-connector-input') ) {
+								__current_drag.drag_connect_inout = "input";
+							} else if( __current_drag.handle.classList.contains('synthez-node-connector-output') ) {
+								__current_drag.drag_connect_inout = "output";
+							}
+
+							if( __current_drag.handle.classList.contains('synthez-node-connector-audio') ) {
+								__current_drag.drag_connect_type = CONNECTION_TYPE_AUDIO;
+							} else if( __current_drag.handle.classList.contains('synthez-node-connector-message') ) {
+								__current_drag.drag_connect_type = CONNECTION_TYPE_MESSAGE;
+							}
+
+							__current_drag.drag_svg_line = that.props.svg_wrapper.line();
+
+							__current_drag.drag_svg_line.node.classList.add(
+								'synthez-connection-svg-line', 
+								'synthez-connection-svg-line-'+__current_drag.drag_connect_type,
+								'synthez-connection-svg-line-dragging'
+							);
+							__current_drag.drag_svg_line.stroke({
+								width: 1,
+							});
 						}
-					})
+		
+					},
+					onend: function(event) {
+						// ***
+					},
+					onmove: function(event) {
+
+						var __current_drag = that.props.__current_drag;
+
+						var target = __current_drag.target,
+					        x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
+					        y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+
+					    var target_node = __current_drag.target_node;
+
+					    switch( __current_drag.drag_type ) {
+					    	case DRAG_INTERACTION_TYPE_MOVE:
+
+					    		target_node.set_position({x: x, y: y});
+
+							    for(var id in target_node.audio_output_nodes) {
+							    	var to_node = target_node.audio_output_nodes[id];
+							    	SynthezNode.update_connection_svg_line(target_node, to_node, CONNECTION_TYPE_AUDIO);
+							    }
+							    for(var id in target_node.message_output_nodes) {
+							    	var to_node = target_node.message_output_nodes[id];
+							    	SynthezNode.update_connection_svg_line(target_node, to_node, CONNECTION_TYPE_MESSAGE);
+							    }
+
+							    for(var id in target_node.audio_input_nodes) {
+							    	var from_node = target_node.audio_input_nodes[id];
+							    	SynthezNode.update_connection_svg_line(from_node, target_node, CONNECTION_TYPE_AUDIO);
+							    }
+							    for(var id in target_node.message_input_nodes) {
+							    	var from_node = target_node.message_input_nodes[id];
+							    	SynthezNode.update_connection_svg_line(from_node, target_node, CONNECTION_TYPE_MESSAGE);
+							    }
+
+					    		break;
+
+					    	case DRAG_INTERACTION_TYPE_CONNECT:
+					    		if( SynthezNode.__ux_data.pointer_position === null ) {
+					    			return;
+					    		}
+
+					    		var start_connector = __current_drag.handle;
+								var start_connector_rect = start_connector.getBoundingClientRect();
+
+					    		SynthezNode.set_svg_line_position(
+					    			__current_drag.drag_svg_line,
+					    			that,
+					    			start_connector_rect.width * 0.5 + start_connector_rect.x,
+									start_connector_rect.height * 0.5 + start_connector_rect.y - 1,
+									SynthezNode.__ux_data.pointer_position.x,
+									SynthezNode.__ux_data.pointer_position.y
+					    		);
+
+					    		break;
+					    }
+					},
+				});
+				
+				interact('.synthez-node-connector').dropzone({
+					checker: function(drag_event, pointer_event, dropped, dropzone, dropElement, draggable, draggableElement) {
+						var __current_drag = that.props.__current_drag;
+
+						if( ! dropped ) {
+							return false;
+						}
+
+						if( __current_drag.drag_type !== DRAG_INTERACTION_TYPE_CONNECT ) {
+							return false;
+						}
+
+						var source_inout = __current_drag.drag_connect_inout;
+					    var source_type = __current_drag.drag_connect_type;
+					    var source_node_identifier = __current_drag.node_identifier;
+
+					    var dest_inout = dropElement.getAttribute('data-connector-inout');
+					    var dest_type = dropElement.getAttribute('data-connector-type');
+					    var dest_node_identifier = dropElement.getAttribute('data-node-identifier');
+
+					    if( source_inout === dest_inout || 
+					    	source_type !== dest_type ||
+					    	source_node_identifier === dest_node_identifier
+					    ) {
+					    	return false;
+					    }
+
+					    __current_drag.drag_connect_dest_inout = dest_inout;
+					    __current_drag.drag_connect_dest_type = dest_type;
+					    __current_drag.drag_connect_dest_node_identifier = dest_node_identifier;
+
+						return true;
+					},
+					ondropdeactivate: function() {
+						that.__reset_drag_ux_data();
+					},
+					ondrop: function(e) {
+						
+						var __current_drag = that.props.__current_drag;
+						
+						var source_inout = __current_drag.drag_connect_inout;
+					    var source_type = __current_drag.drag_connect_type;
+					    var source_node_identifier = __current_drag.node_identifier;
+
+					    var dest_inout = __current_drag.drag_connect_dest_inout;
+					    var dest_type = __current_drag.drag_connect_dest_type;
+					    var dest_node_identifier = __current_drag.drag_connect_dest_node_identifier;
+
+					    if( source_inout == "output" ) {
+					    	var from = that.props.nodes[source_node_identifier];
+					    	var to = that.props.nodes[dest_node_identifier];
+					    } else {
+					    	var to = that.props.nodes[source_node_identifier];
+					    	var from = that.props.nodes[dest_node_identifier];
+					    }
+
+					    SynthezNode.connect_nodes(from, to, source_type);
+					},
+				});
 
 			})(that, container_id);
 			

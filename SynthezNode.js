@@ -16,37 +16,50 @@ var SynthezNode = {
 
 	__audio_context: null,
 
-	__global_timer_start_time: null,
-
 	__started: false,
+
+	__ux_data: {
+		pointer_position: null,
+	},
 
 	/* Front public methods */
 	start: function(main_container_id) {
 		if( SynthezNode.__started ) {
-			console.warn('Synthez Global Timer already running. Aborting new start.');
+			console.warn('Synthez is already running. Aborting new start.');
 			return false;
 		}
 
 		SynthezNode.__main_dom_container = document.getElementById(main_container_id);
 		SynthezNode.__main_dom_container.classList.add('synthez-main-dom-container');
 
-		SynthezNode.__global_timer_start_time = Date.now() * 0.001;
 		SynthezNode.__started = true;
+
+		SynthezNode.__init_global_listeners();
 
 		return SynthezNode.__get_global_audio_context();
 	},
 
-	stop: function() {
-		if( ! SynthezNode.__started ) {
-			console.warn('Synthez Global Timer not running. Aborting stop.');
-			return false;
-		}
+	// stop: function() {
+	// 	if( ! SynthezNode.__started ) {
+	// 		console.warn('Synthez is not running. Aborting stop.');
+	// 		return false;
+	// 	}
 
-		SynthezNode.__global_timer_start_time = null;
-		SynthezNode.__started = false;
-	},
+	// 	SynthezNode.__started = false;
+	// },
 
 	/* Dev private methods */
+	__init_global_listeners: function() {
+		document.addEventListener("mousemove", function(e){
+		    e = e || window.event;
+
+		    SynthezNode.__ux_data.pointer_position = {
+		    	x: e.pageX,
+		    	y: e.pageY
+		    };
+		}, false);
+	},
+
 	__get_global_audio_context: function() {
 		if( ! SynthezNode.__audio_context ) {
 			SynthezNode.__audio_context = new (window.AudioContext || window.webkitAudioContext)();
@@ -146,6 +159,8 @@ var SynthezNode = {
 			return false;
 		}
 
+		var conn_id = SynthezNode.get_connection_identifier(from, to, connection_type);
+
 		switch(connection_type) {
 			case CONNECTION_TYPE_AUDIO:
 				from.audio_output_nodes[to.identifier] = to;
@@ -161,10 +176,13 @@ var SynthezNode = {
 				break;
 		}
 
-		from.set_dom_connector_connection_style(connection_type, 'output', true);
-		to.set_dom_connector_connection_style(connection_type, 'input', true);
+		from.dom_element_children[connection_type + '_output'].classList.add('connected');
+		to.dom_element_children[connection_type + '_input'].classList.add('connected');
 
 		SynthezNode.make_connection_data(from, to, connection_type);
+
+		from.dom_element_children[connection_type + '_output'].setAttribute('data-connection-id', conn_id);
+		from.dom_element_children[connection_type + '_input'].setAttribute('data-connection-id', conn_id);
 	},
 
 	disconnect_nodes: function(from, to, connection_type) {
@@ -198,12 +216,27 @@ var SynthezNode = {
 				break;
 		}
 
-		from.set_dom_connector_connection_style(connection_type, 'output', false);
-		to.set_dom_connector_connection_style(connection_type, 'input', false);
+		from.dom_element_children[connection_type + '_output'].classList.remove('connected');
+		to.dom_element_children[connection_type + '_input'].classList.remove('connected');
+
+		from.dom_element_children[connection_type + '_output'].removeAttribute('data-connection-id');
+		from.dom_element_children[connection_type + '_input'].removeAttribute('data-connection-id');
 	},
 
 	get_connection_identifier: function(from, to, connection_type) {
 		return from.identifier+'_'+to.identifier+'_'+connection_type;
+	},
+
+	set_svg_line_position: function(svg_line, connection_container, x1, y1, x2, y2) {
+		var svg_wrapper = connection_container.props.svg_wrapper;
+		var container_rect = connection_container.dom_element.getBoundingClientRect();
+
+		svg_line.plot(
+			x1 - container_rect.x, 
+			y1 - container_rect.y, 
+			x2 - container_rect.x, 
+			y2 - container_rect.y
+		);
 	},
 
 	update_connection_svg_line: function(from, to, connection_type) {
@@ -214,23 +247,20 @@ var SynthezNode = {
 			return false;
 		}
 
-		var connection_container = from.parent_container;
-		var svg_wrapper = connection_container.props.svg_wrapper;
-
-		var container_rect = connection_container.dom_element.getBoundingClientRect();
-
 		var from_output_connector = from.dom_element_children[connection_type+'_output'];
 		var to_input_connector = to.dom_element_children[connection_type+'_input'];
 
 		var from_cntor_rect = from_output_connector.getBoundingClientRect();
 		var to_cntor_rect = to_input_connector.getBoundingClientRect();
 
-		SynthezNode.__connections[conn_id].line.plot(
-			from_cntor_rect.width * 0.5 + from_cntor_rect.x - container_rect.x, 
-			from_cntor_rect.height * 0.5 + from_cntor_rect.y - container_rect.y - 1, 
-			to_cntor_rect.width * 0.5 + to_cntor_rect.x - container_rect.x, 
-			to_cntor_rect.height * 0.5 + to_cntor_rect.y - container_rect.y - 1
-		)
+		SynthezNode.set_svg_line_position(
+			SynthezNode.__connections[conn_id].line,
+			from.parent_container,
+			from_cntor_rect.width * 0.5 + from_cntor_rect.x,
+			from_cntor_rect.height * 0.5 + from_cntor_rect.y - 1,
+			to_cntor_rect.width * 0.5 + to_cntor_rect.x,
+			to_cntor_rect.height * 0.5 + to_cntor_rect.y - 1
+		);
 	},
 
 	remove_connection_data: function(from, to, connection_type) {

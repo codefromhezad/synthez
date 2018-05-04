@@ -115,14 +115,6 @@ var SynthezNodeTemplate = function(node_class_name) {
 		return 'synthez-' + Helper.camel_case_to_dash_case(this.node_type);
 	}
 
-	this.set_dom_connector_connection_style = function(connection_type, in_or_out, is_connected) {
-		if( is_connected ) {
-			this.dom_element_children[connection_type + '_' + in_or_out].classList.add('connected');
-		} else {
-			this.dom_element_children[connection_type + '_' + in_or_out].classList.remove('connected');
-		}
-	}
-
 	this.spawn_dom_element = function() {
 		if( document.getElementById(this.get_dom_element_id()) ) {
 			return;
@@ -175,6 +167,10 @@ var SynthezNodeTemplate = function(node_class_name) {
 			'synthez-node-connector-input',
 			'synthez-node-connector-audio'
 		);
+		this.dom_element_children.audio_input.setAttribute('data-connector-inout', 'input');
+		this.dom_element_children.audio_input.setAttribute('data-connector-type', 'audio');
+		this.dom_element_children.audio_input.setAttribute('data-node-identifier', this.identifier);
+
 
 		this.dom_element_children.audio_output = document.createElement('div');
 		this.dom_element_children.audio_output.classList.add(
@@ -182,6 +178,10 @@ var SynthezNodeTemplate = function(node_class_name) {
 			'synthez-node-connector-output',
 			'synthez-node-connector-audio'
 		);
+		this.dom_element_children.audio_output.setAttribute('data-connector-inout', 'output');
+		this.dom_element_children.audio_output.setAttribute('data-connector-type', 'audio');
+		this.dom_element_children.audio_output.setAttribute('data-node-identifier', this.identifier);
+
 
 		this.dom_element_children.message_input = document.createElement('div');
 		this.dom_element_children.message_input.classList.add(
@@ -189,6 +189,10 @@ var SynthezNodeTemplate = function(node_class_name) {
 			'synthez-node-connector-input',
 			'synthez-node-connector-message'
 		);
+		this.dom_element_children.message_input.setAttribute('data-connector-inout', 'input');
+		this.dom_element_children.message_input.setAttribute('data-connector-type', 'message');
+		this.dom_element_children.message_input.setAttribute('data-node-identifier', this.identifier);
+
 
 		this.dom_element_children.message_output = document.createElement('div');
 		this.dom_element_children.message_output.classList.add(
@@ -196,6 +200,10 @@ var SynthezNodeTemplate = function(node_class_name) {
 			'synthez-node-connector-output',
 			'synthez-node-connector-message'
 		);
+		this.dom_element_children.message_output.setAttribute('data-connector-inout', 'output');
+		this.dom_element_children.message_output.setAttribute('data-connector-type', 'message');
+		this.dom_element_children.message_output.setAttribute('data-node-identifier', this.identifier);
+
 
 		for(var child_name in this.dom_element_children) {
 			if( this.dom_element_children[child_name] ) {

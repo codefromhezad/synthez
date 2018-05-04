@@ -1,8 +1,11 @@
 var Helper = {
+
+	
 	/* String stuff */
 	camel_case_to_dash_case: function(str) {
 		return str.replace(/([a-zA-Z])(?=[A-Z])/g, '$1-').toLowerCase()
 	},
+
 
 	/* DOM stuff */
 	create_element_from_HTML: function(html_string) {

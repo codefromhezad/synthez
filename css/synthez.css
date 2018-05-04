@@ -51,6 +51,9 @@ html, body {
       stroke: #c34727; }
     .synthez-dom-node.synthez-dom-is-opened .svg-connection-container .synthez-connection-svg-line.synthez-connection-svg-line-message {
       stroke: #27c379; }
+    .synthez-dom-node.synthez-dom-is-opened .svg-connection-container .synthez-connection-svg-line.synthez-connection-svg-line-dragging {
+      opacity: 0.5;
+      stroke-dasharray: 5; }
 
 /* Every regular nodes and closed container nodes */
 .synthez-dom-node:not(.synthez-dom-is-opened) {
@@ -58,7 +61,11 @@ html, body {
   width: 200px;
   height: 100px;
   border-top: 1px solid #528198;
-  border-bottom: 1px solid #406577; }
+  border-bottom: 1px solid #406577;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none; }
   .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-title {
     position: absolute;
     font-size: 12px;
@@ -145,7 +152,8 @@ html, body {
     -moz-transition: left 0.2s, right 0.2s;
     transition: left 0.2s, right 0.2s; }
     .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.connected {
-      opacity: 1; }
+      opacity: 1;
+      cursor: initial; }
     .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector:after {
       content: ' ';
       position: absolute;
@@ -164,7 +172,7 @@ html, body {
       -webkit-border-bottom-right-radius: 0;
          -moz-border-radius-bottomright: 0;
               border-bottom-right-radius: 0; }
-      .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-input:hover {
+      .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-input:hover, .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-input.synthez-drag-source {
         left: -16.9px; }
       .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-input.connected {
         left: -20.8px; }
@@ -176,7 +184,7 @@ html, body {
       -webkit-border-bottom-left-radius: 0;
          -moz-border-radius-bottomleft: 0;
               border-bottom-left-radius: 0; }
-      .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-output:hover {
+      .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-output:hover, .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-output.synthez-drag-source {
         right: -16.9px; }
       .synthez-dom-node:not(.synthez-dom-is-opened) > .synthez-node-connector.synthez-node-connector-output.connected {
         right: -20.8px; }

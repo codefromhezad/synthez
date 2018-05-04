@@ -85,6 +85,11 @@ html, body {
 				stroke: darken($base-dom-message-connector-color, 20%);
 			}
 			
+
+			&.synthez-connection-svg-line-dragging {
+				opacity: 0.5;
+				stroke-dasharray: 5;
+			}
 		}
 	}
 }
@@ -96,6 +101,7 @@ html, body {
 	height: $base-dom-node-default-height;
 	border-top: 1px solid darken($base-dom-node-color, 20%);
 	border-bottom: 1px solid darken($base-dom-node-color, 30%);
+	user-select: none;
 
 	> .synthez-node-title {
 		position: absolute;
@@ -179,6 +185,7 @@ html, body {
 
 		&.connected {
 			opacity: 1;
+			cursor: initial;
 		}
 
 		&:after {
@@ -195,7 +202,8 @@ html, body {
 			border-top-right-radius: 0;
 			border-bottom-right-radius: 0;
 
-			&:hover {
+			&:hover,
+			&.synthez-drag-source {
 				left: -$base-dom-connector-size * 0.65;
 			}
 
@@ -209,7 +217,8 @@ html, body {
 			border-top-left-radius: 0;
 			border-bottom-left-radius: 0;
 
-			&:hover {
+			&:hover,
+			&.synthez-drag-source {
 				right: -$base-dom-connector-size * 0.65;
 			}
 
