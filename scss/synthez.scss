@@ -139,19 +139,36 @@ html, body {
 		left: 0;
 		width: 100%;
 		top: $base-dom-node-default-height - 1px;
-		padding: 10px;
+		height: 21px;
+		min-height: 21px;
 		background: darken($base-dom-node-color, 20%);
 		border: 1px solid darken($base-dom-node-color, 30%);
 		border-bottom-color: darken($base-dom-node-color, 35%);
 		border-top: none;
-		box-shadow: inset 0 2px 5px 0px rgba(0, 0, 0, 0.4);
+		transition: height 0.2s;
+
+		.synthez-toggle-quick-settings {
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			height: 20px;
+			background: darken($base-dom-node-color, 10%) url('../img/bottom_triangle_symbol.svg') no-repeat 50% 50%;
+			background-size: 6%;
+			cursor: pointer;
+			border-top: 1px solid lighten($base-dom-node-color, 1%);
+			transition: background-color 0.2s;
+
+			&:hover, &:focus {
+				background-color: darken($base-dom-node-color, 20%);
+			}
+		}
 
 		.synthez-ux-button {
 			padding: 4px 10px;
 			font-size: 10px;
 			border-radius: 4px;
 			text-transform: uppercase;
-			display: inline-block;
 			cursor: pointer;
 			background: $base-dom-node-color no-repeat center;
 			background-size: 50%;
@@ -168,6 +185,32 @@ html, body {
 				border-bottom-width: 2px;
 				margin-bottom: 1px;
 				transform: translateY(1px);
+			}
+		}
+
+		> .synthez-ux-quick-access-input {
+			display: none;
+			margin: 10px;
+			margin-bottom: 0;
+		}
+
+		&.synthez-opened {
+			padding-bottom: 30px;
+			box-shadow: inset 0 2px 5px 0px rgba(0, 0, 0, 0.4);
+			height: auto;
+
+			> .synthez-ux-quick-access-input {
+				display: inline-block;
+			}
+
+			.synthez-toggle-quick-settings {
+				background-image: url('../img/top_triangle_symbol.svg');
+				background-color: $base-dom-node-color;
+				border-top: 1px solid lighten($base-dom-node-color, 15%);
+
+				&:hover, &:focus {
+					background-color: darken($base-dom-node-color, 5%);
+				}
 			}
 		}
 	}

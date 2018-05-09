@@ -18,7 +18,7 @@ SynthezNode.define('SequencerNode', {
 		__scheduler: null,
 	},
 	ux_quick_access_elements: {
-		play_pause: '<div class="synthez-ux-button synthez-seq-button synthez-seq-play-pause" data-action="play">Play</div>'
+		play_pause: '<div class="synthez-ux-quick-access-input synthez-ux-button synthez-seq-button synthez-seq-play-pause" data-action="play">Play</div>'
 	},
 	listeners: {
 		on_init: function() {

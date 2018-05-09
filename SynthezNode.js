@@ -35,8 +35,9 @@ var SynthezNode = {
 		SynthezNode.__started = true;
 
 		SynthezNode.__init_global_listeners();
+		SynthezNode.__get_global_audio_context();
 
-		return SynthezNode.__get_global_audio_context();
+		return SynthezNode.create_root_container_node();
 	},
 
 	// stop: function() {

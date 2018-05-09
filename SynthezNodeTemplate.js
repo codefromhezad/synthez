@@ -23,7 +23,8 @@ var SynthezNodeTemplate = function(node_class_name) {
 		title: null,
 		body: null,
 		ux_quick_access_container: null,
-	}
+		ux_quick_access_toggler: null
+	};
 
 	this.position = {};
 	this.icon = {};
@@ -155,6 +156,25 @@ var SynthezNodeTemplate = function(node_class_name) {
 				var ux_dom_element = Helper.create_element_from_HTML(this.ux_quick_access_elements[element_id]);
 				this.dom_element_children.ux_quick_access_container.appendChild(ux_dom_element);
 			}
+
+			var ux_quick_access_toggler = Helper.create_element_from_HTML('<div class="synthez-toggle-quick-settings" data-state="closed"></div>');
+			this.dom_element_children.ux_quick_access_container.appendChild(ux_quick_access_toggler);
+
+			var that_quick_access_container = this.dom_element_children.ux_quick_access_container;
+
+			( function( that_quick_access_container, ux_quick_access_toggler ) {
+				ux_quick_access_toggler.addEventListener('click', function(e) {
+					e = e || window.event;
+
+					if( ux_quick_access_toggler.getAttribute('data-state') == "closed" ) {
+						that_quick_access_container.classList.add('synthez-opened');
+						ux_quick_access_toggler.setAttribute('data-state', 'opened');
+					} else {
+						that_quick_access_container.classList.remove('synthez-opened');
+						ux_quick_access_toggler.setAttribute('data-state', 'closed');
+					}
+				}, false);
+			})( that_quick_access_container, ux_quick_access_toggler);
 		}
 
 		if( this.icon && this.icon.file ) {
