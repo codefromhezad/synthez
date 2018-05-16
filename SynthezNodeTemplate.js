@@ -33,16 +33,12 @@ var SynthezNodeTemplate = function(node_class_name) {
 
 	this.listeners = {
 		on_message_data: function(message_data) {
-			switch(message_data.type) {
-				case MESSAGE_TYPE_SETTING:
-					if( typeof message_data.conf === "string" ) {
-						this.trigger_message_receiver(message_data.conf);
-					} else {
-						for(var setting_slug in message_data.conf) {
-							this.trigger_message_receiver(setting_slug, message_data.conf[setting_slug]);
-						}
-					}
-					break;
+			if( typeof message_data.conf === "string" ) {
+				this.trigger_message_receiver(message_data.conf);
+			} else {
+				for(var setting_slug in message_data.conf) {
+					this.trigger_message_receiver(setting_slug, message_data.conf[setting_slug]);
+				}
 			}
 		}
 	};
@@ -61,28 +57,15 @@ var SynthezNodeTemplate = function(node_class_name) {
 		this.trigger('on_init');
 	};
 
-	this.add_data_message = function(data_message) {
-		data_message.__list_index = this.props.messages_list.push(data_message) - 1;
-		return data_message.__list_index;
-	};
-
-	this.remove_data_message = function(message_index) {
-		this.props.__scheduler.remove(message_index);
+	this.send_message_data_to_node = function(message_data, output_node) {
+		output_node.trigger('on_message_data', message_data);
 	};
 
 	this.send_message_data_to_message_outputs = function(message_data) {
-		message_data.__sent = true;
 		for(var node_id in this.message_output_nodes) {
-			this.message_output_nodes[node_id].trigger('on_message_data', message_data);
+			this.send_message_data_to_node(message_data, this.message_output_nodes[node_id]);
 		}
 	};
-
-	this.disconnect_all_audio_outputs = function() {
-		if( this.web_audio_node_handle && this.audio_output_nodes.length ) {
-			this.web_audio_node_handle.disconnect();
-			this.audio_output_nodes = [];
-		}
-	}
 
 	this.set_position = function(position) {
 		this.position = position;

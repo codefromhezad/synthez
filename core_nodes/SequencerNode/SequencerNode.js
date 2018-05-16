@@ -11,27 +11,17 @@ SynthezNode.define('SequencerNode', {
 		label: 'Unlabeled sequencer',
 	},
 	props: {
-		messages_list: [],
 		__full_duration: 0,
 		__started_time: 0,
 
-		__scheduler: null,
+		__messages: [],
 	},
 	ux_quick_access_elements: {
 		play_pause: '<div class="synthez-ux-quick-access-input synthez-ux-button synthez-seq-button synthez-seq-play-pause" data-action="play">Play</div>'
 	},
 	listeners: {
 		on_init: function() {
-			this.props.__scheduler = new WebAudioScheduler({ context: this.audio_context });
 			this.props.__full_duration = 0;
-
-			var that = this;
-
-			this.props.__scheduler.on("processed", function(e) {
-				if( e.playbackTime >= that.props.__started_time + that.props.__full_duration ) {
-					that.stop();
-				}
-			});
 		},
 		after_spawn: function() {
 			var node = this;
@@ -51,23 +41,32 @@ SynthezNode.define('SequencerNode', {
 	},
 	methods: {
 		/* Private methods */
-		__schedule_messages_from_now: function(that, e) {
-			var t0 = e.playbackTime;
 
-			for(var message_index = 0; message_index < this.props.messages_list.length; message_index++ ) {
-				var data_message = this.props.messages_list[message_index];
+		__add_data_message: function(trigger_time, output_node, data_message_conf) {
+			var data_message = new SynthezDataMessage(
+				trigger_time,
+				this,
+				output_node,
+				data_message_conf
+			);
 
-				(function(that, t0) {
-					that.props.__scheduler.insert(
-						t0 + data_message.local_trigger_time,
-						function(e) {
-							that.send_message_data_to_message_outputs(e.args.data_message);
-						},
-						{ data_message: data_message }
-					);
-				})(that, t0);
+			this.props.__messages.push(data_message);
+		},
+
+		__add_data_message_to_all_outputs: function(trigger_time, data_message_conf) {
+			for(var node_id in this.message_output_nodes) {
+				this.__add_data_message(
+					trigger_time, 
+					this.message_output_nodes[node_id],
+					data_message_conf
+				);
 			}
-			
+		},
+
+		__add_messages_list_to_global_timer: function() {
+			for(var i = 0; i < this.props.__messages.length; i++) {
+				SynthezNode.__message_events.push(this.props.__messages[i]);
+			}
 		},
 
 		/* Public methods */
@@ -85,9 +84,15 @@ SynthezNode.define('SequencerNode', {
 				this.props.__full_duration = start_time + length_time;
 			}
 
-			this.add_data_message(new SynthezDataMessage(MESSAGE_TYPE_SETTING, start_time, {
-				frequency: frequency
-			})); 
+			this.__add_data_message_to_all_outputs(
+				start_time + AUDIO_TIMER_EPSILON,
+				{ note_on: frequency }
+			);
+
+			this.__add_data_message_to_all_outputs(
+				start_time + AUDIO_TIMER_EPSILON + length_time,
+				'note_off'
+			);
 		},
 
 		play: function() {
@@ -97,15 +102,14 @@ SynthezNode.define('SequencerNode', {
 			playpause_button.setAttribute('data-action', 'stop');
 			playpause_button.textContent = "Stop";
 			
-			this.add_data_message(new SynthezDataMessage(MESSAGE_TYPE_SETTING, 0.0, 'start')); 
-			this.props.__started_time = 0;
+			// this.__add_data_message_to_all_outputs(
+			// 	0.0,
+			// 	'kill'
+			// );
 
-			this.props.__scheduler.start( (function(that) {
-				return function(e) {
-					that.props.__started_time = e.playbackTime;
-					that.__schedule_messages_from_now(that, e);
-				};
-			})(this));
+			this.props.__started_time = this.audio_context.currentTime;
+			
+			this.__add_messages_list_to_global_timer();
 		},
 
 		stop: function() {
@@ -114,9 +118,7 @@ SynthezNode.define('SequencerNode', {
 			playpause_button.setAttribute('data-action', 'play');
 			playpause_button.textContent = "Play";
 
-			this.props.__scheduler.stop(true);
-			this.props.__scheduler.removeAll();
-			this.send_message_data_to_message_outputs(new SynthezDataMessage(MESSAGE_TYPE_SETTING, 0.0, 'stop'));
+			//this.send_message_data_to_message_outputs(new SynthezDataMessage(0.0, 'kill'));
 		}
 
 		// open: function() {

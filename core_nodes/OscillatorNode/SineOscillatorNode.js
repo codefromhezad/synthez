@@ -6,7 +6,6 @@ SynthezNode.define('SineOscillatorNode', {
 		credits: 'Sine Wave by Davo Sime from the Noun Project'
 	},
 	defaults: {
-		type: OSC_TYPE_SINE,
-		frequency: 440
+		type: OSC_TYPE_SINE
 	}
 });

@@ -1,4 +1,4 @@
-const AUDIO_TIMER_EPSILON = 0.0001;
+const AUDIO_TIMER_EPSILON = 0.00001;
 
 const CONNECTION_TYPE_AUDIO = "audio";
 const CONNECTION_TYPE_MESSAGE = "message";
@@ -15,6 +15,8 @@ var SynthezNode = {
 	__main_dom_container: null,
 
 	__audio_context: null,
+	__message_events: [],
+	__global_timer_handle: null,
 
 	__started: false,
 
@@ -37,6 +39,8 @@ var SynthezNode = {
 		SynthezNode.__init_global_listeners();
 		SynthezNode.__get_global_audio_context();
 
+		SynthezNode.__global_timer_handle = requestAnimationFrame(SynthezNode.__audio_timer_loop);
+
 		return SynthezNode.create_root_container_node();
 	},
 
@@ -50,6 +54,25 @@ var SynthezNode = {
 	// },
 
 	/* Dev private methods */
+
+	__audio_timer_loop: function() {
+		var current_time = SynthezNode.__audio_context.currentTime;
+
+		var i = SynthezNode.__message_events.length;
+
+		while(i--) {
+			var message_event = SynthezNode.__message_events[i];
+			
+			if( message_event.source_node.props.__started_time + message_event.local_trigger_time <= current_time ) {
+				message_event.source_node.send_message_data_to_node(message_event, message_event.dest_node);
+
+				SynthezNode.__message_events.splice(i, 1);
+			}
+		}
+
+		SynthezNode.__global_timer_handle = requestAnimationFrame(SynthezNode.__audio_timer_loop);
+	},
+
 	__init_global_listeners: function() {
 		document.addEventListener("mousemove", function(e){
 		    e = e || window.event;
@@ -170,10 +193,12 @@ var SynthezNode = {
 				if( from.web_audio_node_handle && to.web_audio_node_handle ) {
 					from.web_audio_node_handle.connect(to.web_audio_node_handle);
 				}
+
 				break;
 			case CONNECTION_TYPE_MESSAGE:
 				from.message_output_nodes[to.identifier] = to;
 				to.message_input_nodes[from.identifier] = from;
+
 				break;
 		}
 

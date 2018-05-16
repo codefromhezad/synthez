@@ -240,3 +240,7 @@ html, body {
         background-image: url("../img/message_signal_connector_symbol.svg");
         width: 15.6px;
         height: 15.6px; }
+  .synthez-dom-node:not(.synthez-dom-is-opened) .synthez-visualiser-screen {
+    display: block;
+    width: 100%;
+    height: 100%; }

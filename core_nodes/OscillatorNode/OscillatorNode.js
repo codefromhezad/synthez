@@ -12,17 +12,15 @@ SynthezNode.define('OscillatorNode', {
 	},
 	defaults: {
 		type: OSC_TYPE_SINE,
-		frequency: 440
+		frequency: 1440
 	},
 	props: {
-		is_playing: false,
-		is_initialized: false,
-
+		__is_started: false,
 		__local_gain_node: null,
 	},
 	listeners: {
 		on_init: function() {
-			
+			this.props.__local_gain_node = this.audio_context.createGain();
 		},
 	},
 	messages_receivers: {
@@ -32,15 +30,61 @@ SynthezNode.define('OscillatorNode', {
 		type: function(new_osc_type) {
 			this.set_type(new_osc_type);
 		},
-		start: function() {
-			this.start();
+		kill: function() {
+			this.kill_web_audio_oscillator();
 		},
-		stop: function() {
-			this.stop();
+		note_off: function() {
+			this.note_off();
 		},
+		note_on: function(note_freq) {
+			this.note_on(note_freq);
+		}
 	},
 	methods: {
 		/* Private OSC methods */
+		kill_web_audio_oscillator: function() {
+			if( ! this.web_audio_node_handle ) {
+				return;
+			}
+
+			if( this.props.__local_gain_node ) {
+				this.props.__local_gain_node.gain.setValueAtTime(this.props.__local_gain_node.gain.value, this.audio_context.currentTime);
+				this.props.__local_gain_node.gain.exponentialRampToValueAtTime(0.0001, this.audio_context.currentTime + AUDIO_TIMER_EPSILON);
+			}
+
+			var that = this;
+			
+			setTimeout( function() {
+				if( that.props.__is_started ) {
+					that.web_audio_node_handle.stop(that.audio_context.currentTime);
+				}
+
+				for(var out_node_index in that.audio_input_nodes) {
+					that.audio_input_nodes[out_node_index].web_audio_node_handle.disconnect(that.web_audio_node_handle);
+				}
+				
+				that.web_audio_node_handle = null;
+				
+				that.props.__is_started = false;
+			}, this.audio_context.currentTime + AUDIO_TIMER_EPSILON * 2.0)
+		},
+
+		reset_web_audio_oscillator: function(before_start_cb) {
+			this.web_audio_node_handle = this.audio_context.createOscillator();
+			this.web_audio_node_handle.type = this.settings.type;
+
+			for(var out_node_index in this.audio_output_nodes) {
+				this.web_audio_node_handle.connect(this.audio_output_nodes[out_node_index].web_audio_node_handle);
+			}
+
+			if( before_start_cb !== undefined ) {
+				before_start_cb.call(this);
+			}
+
+			this.web_audio_node_handle.start(this.audio_context.currentTime);
+
+			this.props.__is_started = true;
+		},
 
 
 		/* Public OSC setters/getters */
@@ -49,72 +93,35 @@ SynthezNode.define('OscillatorNode', {
 			this.web_audio_node_handle.type = this.settings.type;
 		},
 
-		set_frequency: function(new_osc_frequency) {
+		set_frequency: function(new_osc_frequency, time_offset) {
 			this.settings.frequency = new_osc_frequency;
 			
 			if( this.web_audio_node_handle ) {
 				this.web_audio_node_handle.frequency.linearRampToValueAtTime(
 					this.settings.frequency, 
-					this.audio_context.currentTime
+					this.audio_context.currentTime + (time_offset ? time_offset : 0)
 				);
 			}
 		},
 
-
 		/* Public OSC interaction methods */
-		boot: function() {
-			this.web_audio_node_handle = this.audio_context.createOscillator();
-			this.web_audio_node_handle.type = this.settings.type;
+		note_off: function() {
+			this.kill_web_audio_oscillator();
 
-			this.props.__local_gain_node = this.audio_context.createGain();
-			this.web_audio_node_handle.connect(this.props.__local_gain_node);
-
-			for(var out_node_index in this.audio_output_nodes) {
-				this.props.__local_gain_node.connect(this.audio_output_nodes[out_node_index].web_audio_node_handle);
-			}
-
-			this.props.__local_gain_node.gain.setValueAtTime(0, this.audio_context.currentTime);
-			this.web_audio_node_handle.start(this.audio_context.currentTime + AUDIO_TIMER_EPSILON);
-
-			this.props.is_initialized = true;
+			// if( this.props.__local_gain_node ) {
+			// 	this.props.__local_gain_node.gain.linearRampToValueAtTime(0.0, this.audio_context.currentTime);
+			// }
 		},
 
-		kill: function() {
-			this.web_audio_node_handle.stop(this.audio_context.currentTime);
-			this.disconnect_all_audio_outputs();
+		note_on: function(note_freq) {
+			this.reset_web_audio_oscillator(function() {
+				this.set_frequency(note_freq /*, AUDIO_TIMER_EPSILON */);
+			});
 
-			this.props.is_initialized = false;
-		},
-
-		start: function() {
-			if( ! this.props.is_initialized ) {
-				this.boot();
-			}
-
-			if( this.props.is_playing ) {
-				return; // Already playing
-			}
-
-			this.web_audio_node_handle.frequency.linearRampToValueAtTime(
-				this.settings.frequency, 
-				this.audio_context.currentTime
-			);
-
-			this.props.__local_gain_node.gain.setValueAtTime(1.0, this.audio_context.currentTime);
-			
-			this.props.is_playing = true;
-		},
-
-		stop: function() {
-			this.props.is_playing = false;
-
-			if( this.props.__local_gain_node ) {
-				this.props.__local_gain_node.gain.setValueAtTime(0.0, this.audio_context.currentTime);
-			}
-			
-
-			return true;
-		},
+			// if( this.props.__local_gain_node ) {
+			// 	this.props.__local_gain_node.gain.linearRampToValueAtTime(1.0, this.audio_context.currentTime);
+			// }
+		}
 	}
 });
 

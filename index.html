@@ -13,7 +13,6 @@
 
  
 		<script src="vendor/interact.min.js"></script>
-		<script src="vendor/web-audio-scheduler.min.js"></script>
 		<script src="vendor/svg.min.js"></script>
 
 		<script src="Helper.js"></script>
@@ -21,13 +20,21 @@
 		<script src="SynthezNodeTemplate.js"></script>
 		<script src="SynthezNode.js"></script>
 		<script src="SynthezDataMessage.js"></script>
+
 		<script src="core_nodes/ContainerNode.js"></script>
+
+		<script src="core_nodes/FilterNode/FilterNode.js"></script>
+
+		<script src="core_nodes/SpectrumAnalyserNode/SpectrumAnalyserNode.js"></script>
+
 		<script src="core_nodes/OscillatorNode/OscillatorNode.js"></script>
 		<script src="core_nodes/OscillatorNode/SineOscillatorNode.js"></script>
 		<script src="core_nodes/OscillatorNode/SquareOscillatorNode.js"></script>
 		<script src="core_nodes/OscillatorNode/SawtoothOscillatorNode.js"></script>
 		<script src="core_nodes/OscillatorNode/TriangleOscillatorNode.js"></script>
+
 		<script src="core_nodes/SequencerNode/SequencerNode.js"></script>
+
 		<script src="core_nodes/AudioOutputNode/AudioOutputNode.js"></script>
 
 		<script>
@@ -38,26 +45,36 @@
 			var osc = root_container.add_node('SineOscillatorNode');
 			osc.set_position({y: 50, x: 320});
 
+			var filter = root_container.add_node('FilterNode', { type: FILTER_TYPE_NOTCH, frequency: 100, Q: 5, gain: 1 });
+			filter.set_position({y: 50, x: 620});
+
+
+			var analyser = root_container.add_node('SpectrumAnalyserNode');
+			analyser.set_position({y: 50, x: 920});
+
+
 			var out = root_container.add_node('AudioOutputNode');
-			out.set_position({y: 50, x: 620});
-
-			SynthezNode.connect_nodes(osc, out);
+			out.set_position({y: 50, x: 1220});
 
 
-
-			var seq = root_container.add_node('SequencerNode', {
-				bpm: 120
-			});
+			var seq = root_container.add_node('SequencerNode', { bpm: 120 });
 			seq.set_position({y: 50, x: 20});
 			
-			// SynthezNode.connect_nodes(seq, osc, CONNECTION_TYPE_MESSAGE);
+			SynthezNode.connect_nodes(seq, osc, CONNECTION_TYPE_MESSAGE);
+			SynthezNode.connect_nodes(osc, filter);
+			SynthezNode.connect_nodes(filter, analyser);
+			SynthezNode.connect_nodes(analyser, out);
 
-			seq.add_message_note("A4", 0, 1);
-			seq.add_message_note("C5", 1, 1);
-			seq.add_message_note("E5", 2, 1);
-			seq.add_message_note("G4", 3, 1);
 
-			// seq.play();
+			seq.add_message_note("A4", 0, 0.5);
+			seq.add_message_note("E4", 1, 0.5);
+			seq.add_message_note("C4", 2, 0.5);
+			seq.add_message_note("G4", 3, 0.5);
+			seq.add_message_note("F3", 4, 0.5);
+			seq.add_message_note("C4", 5, 0.5);
+			seq.add_message_note("G3", 6, 0.5);
+			seq.add_message_note("D4", 7, 0.5);
+
 		</script>
 	</body>
 </html>
